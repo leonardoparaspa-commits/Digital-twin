@@ -259,7 +259,7 @@ const ydisp = new THREE.Group(); ydisp.position.set(-1.9, 3.2, -1.9); ydisp.rota
 add(ydisp, new THREE.BoxGeometry(.9, .6, .2), STD(0x15171a, .4, .5), 0, 0, 0);
 add(ydisp, new THREE.PlaneGeometry(.74, .42), new THREE.MeshBasicMaterial({ color: 0x0a1410 }), 0, 0, .105).castShadow = false;
 const yardBar = add(ydisp, new THREE.PlaneGeometry(.66, .3), new THREE.MeshBasicMaterial({ color: new THREE.Color(.3, 1.1, .5) }), 0, 0, .11); yardBar.castShadow = false;
-let yardW = 0;
+let yardW = 0, carT = 0;
 const fillMat = bathMat.clone(); fillMat.uniforms = { time: bathMat.uniforms.time, heat: { value: 1 } };
 const ladleFill = new THREE.Mesh(new THREE.CircleGeometry(1.3, 48), fillMat); ladleFill.rotation.x = -Math.PI/2; ladleG.add(ladleFill);
 const stream = new THREE.Mesh(new THREE.CylinderGeometry(.16, .12, 1, 14), new THREE.MeshBasicMaterial({ color: new THREE.Color(2.6, .8, .14) })); scene.add(stream);
@@ -311,7 +311,7 @@ function frame(dt) {
   scrap.forEach(p => p.visible = p.userData.thr < scrapLvl && M.phase.id !== 'colata');
   const lf = M.phase.id === 'colata' ? M.c : (t >= 55 ? 1 : 0);
   ladleFill.position.y = 1.3 + 1.2*lf; ladleFill.visible = lf > .02;
-  const carX = S.car.step(dt); ladleG.position.x = 7.7 + carX; glow2.position.x = ladleG.position.x; wheels.forEach(w => w.rotation.y = -carX/.42);
+  carT = t >= 54.85 ? carT + dt : 0; const k = clamp(carT/3.2), carX = 9.5*(k < .5 ? 4*k*k*k : 1 - Math.pow(-2*k + 2, 3)/2); ladleG.position.x = 7.7 + carX; glow2.position.x = ladleG.position.x; wheels.forEach(w => w.rotation.y = -carX/.42);
   const w = Math.max(.001, lf*clamp(1 - carX/2.5)); scaleBar.scale.x = w; scaleBar.position.x = -.33*(1 - w);
   scaleTick.position.x = -.33 + .66*w; scaleTick.visible = w > .02 && w < .99;
   
@@ -397,7 +397,7 @@ let last = performance.now(); sync();
 const SPEED = { carica: .8, fusione: 5, colata: 1.6 }; // replay minutes per second, per phase
 function loop(now) {
   const dt = Math.min(.05, (now - last)/1000); last = now;
-  if (playing) { t += dt*SPEED[model(t).phase.id]; if (t >= END) { t = END; if (auto) { hold += dt; if (hold > 3.2) { t = 0; hold = 0; S.car.set(0); } } else playing = false; } sync(); }
+  if (playing) { t += dt*SPEED[model(t).phase.id]; if (t >= END) { t = END; if (auto) { hold += dt; if (hold > 3.6) { t = 0; hold = 0; } } else playing = false; } sync(); }
   frame(dt); requestAnimationFrame(loop);
 }
 requestAnimationFrame(loop);
