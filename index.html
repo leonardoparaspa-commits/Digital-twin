@@ -157,10 +157,11 @@ for (let i = 0; i < 22; i++) { const a = i*Math.PI*2/22, p = add(body, new THREE
 for (const y of [3.55, 4.55]) { const t = add(body, new THREE.TorusGeometry(3.62, .06, 8, 96), mPipe, 0, y, 0); t.rotation.x = Math.PI/2; }
 for (const z of [-2.5, 2.5]) { add(body, new THREE.BoxGeometry(9.4, .5, .7), mDark, 0, .55, z); add(body, new THREE.BoxGeometry(.5, .9, .7), mDark, -3.5, 1.0, z); }
 /* slag door: water-cooled steel door in a frame; a hot slit glows under it while the bath is molten */
-const door = add(body, new THREE.BoxGeometry(2.2, 1.8, .3), mDark, 0, 3.35, 3.55);
-add(body, new THREE.BoxGeometry(1.6, 1.15, .14), STD(0x3a3e45, .55, .7, { map: steel }), 0, 3.5, 3.74);
-for (const y of [3.15, 3.45, 3.75]) { const r = add(body, new THREE.CylinderGeometry(.05, .05, 1.5, 10), mPipe, 0, y, 3.83); r.rotation.z = Math.PI/2; }
-const slagSlit = new THREE.Mesh(new THREE.PlaneGeometry(1.5, .12), new THREE.MeshBasicMaterial({ color: new THREE.Color(2.4, .7, .1), transparent: true, opacity: 0 })); slagSlit.position.set(0, 2.82, 3.72); body.add(slagSlit);
+const door = add(body, new THREE.BoxGeometry(2.2, 1.8, .3), STD(0x23252a, .85, .3, { envMapIntensity: .2 }), 0, 3.35, 3.55);
+const mDoor = STD(0x34373c, .85, .25, { map: steel, envMapIntensity: .2 }), mDoorPipe = STD(0x6d7178, .7, .3, { envMapIntensity: .2 });
+add(body, new THREE.BoxGeometry(1.6, 1.15, .14), mDoor, 0, 3.5, 3.74);
+for (const y of [3.15, 3.45, 3.75]) { const r = add(body, new THREE.CylinderGeometry(.05, .05, 1.5, 10), mDoorPipe, 0, y, 3.86); r.rotation.z = Math.PI/2; }
+const slagSlit = new THREE.Mesh(new THREE.PlaneGeometry(1.5, .12), new THREE.MeshBasicMaterial({ color: new THREE.Color(2.4, .7, .1), transparent: true, opacity: 0 })); slagSlit.position.set(0, 2.82, 3.76); slagSlit.material.depthWrite = false; body.add(slagSlit);
 const spout = add(body, new THREE.BoxGeometry(2.0, .28, 1.2), mPanel, 4.4, 4.45, 0); spout.rotation.z = -.2;
 add(body, new THREE.BoxGeometry(2.0, .45, .14), mPanel, 4.4, 4.62, .62).rotation.z = -.2; add(body, new THREE.BoxGeometry(2.0, .45, .14), mPanel, 4.4, 4.62, -.62).rotation.z = -.2;
 const tip = new THREE.Object3D(); tip.position.set(5.35, 4.25, 0); body.add(tip);
