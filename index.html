@@ -122,7 +122,7 @@ new ResizeObserver(size).observe(stage); size();
 /* ---------- materials ---------- */
 const STD = (color, rough = .6, metal = .5, o = {}) => { const m = new THREE.MeshStandardMaterial(Object.assign({ color, roughness: rough, metalness: metal, envMapIntensity: .55 }, o)); m.color.convertSRGBToLinear(); return m; };
 const mShell = STD(0x4a5059, .55, .75, { map: steel }), mPanel = STD(0x8a9099, .4, .8, { map: steel }), mDark = STD(0x23252a, .6, .7), mPipe = STD(0xb7bcc3, .3, .9);
-const mBrick = STD(0xffffff, .95, 0, { map: brick, side: THREE.BackSide }), mRoof = STD(0x30343a, .5, .8, { map: steel }), mGraph = STD(0x1e1f22, .55, .35);
+const mBrick = STD(0xffffff, .95, 0, { map: brick, side: THREE.BackSide }), mRoof = STD(0x2c3035, .7, .35, { map: steel, side: THREE.DoubleSide, envMapIntensity: .25 }), mGraph = STD(0x1e1f22, .55, .35);
 const mClamp = STD(0x9a6b2f, .5, .7), mConc = STD(0xffffff, .95, 0, { map: concrete }), mYellow = STD(0xc9a21e, .7, .1);
 const mScrap = [STD(0x7a5a45, .7, .6, { map: rust }), STD(0x5d5f66, .5, .8), STD(0x8d6b4d, .8, .5, { map: rust }), STD(0x3d3f45, .5, .7)];
 const sh = o => { o.castShadow = o.receiveShadow = true; return o; };
