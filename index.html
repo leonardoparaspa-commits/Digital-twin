@@ -142,7 +142,7 @@ const ring = new THREE.Mesh(new THREE.RingGeometry(7.6, 7.78, 96), mYellow); rin
 for (const z of [-1.15, 1.15]) add(scene, new THREE.BoxGeometry(14, .12, .22), STD(0x55585e, .4, .9), 10.5, .06, z);
 for (let x = -36; x <= 36; x += 12) { add(scene, new THREE.BoxGeometry(1, 30, 1), mDark, x, 15, -24); add(scene, new THREE.BoxGeometry(.3, 30, 1.6), mDark, x, 15, -24); }
 add(scene, new THREE.BoxGeometry(90, 1.6, 1.2), mDark, 0, 21, -24);
-const crane = new THREE.Group(); crane.position.y = 19.4; scene.add(crane);
+const crane = new THREE.Group(); crane.position.y = 21.5; scene.add(crane);
 add(crane, new THREE.BoxGeometry(80, 1.1, 1.1), STD(0x3a3d44, .5, .8), 0, 0, 0);
 const trolley = add(crane, new THREE.BoxGeometry(2.6, 1, 2), STD(0x6a5a2a, .6, .6), 0, -1, 0);
 
@@ -156,7 +156,11 @@ const rimR = add(body, new THREE.TorusGeometry(3.38, .18, 12, 96), mPipe, 0, 4.6
 for (let i = 0; i < 22; i++) { const a = i*Math.PI*2/22, p = add(body, new THREE.BoxGeometry(1.2, 1.05, .14), mPanel, Math.cos(a)*3.58, 4.05, Math.sin(a)*3.58); p.rotation.y = -a + Math.PI/2; }
 for (const y of [3.55, 4.55]) { const t = add(body, new THREE.TorusGeometry(3.62, .06, 8, 96), mPipe, 0, y, 0); t.rotation.x = Math.PI/2; }
 for (const z of [-2.5, 2.5]) { add(body, new THREE.BoxGeometry(9.4, .5, .7), mDark, 0, .55, z); add(body, new THREE.BoxGeometry(.5, .9, .7), mDark, -3.5, 1.0, z); }
-const door = add(body, new THREE.BoxGeometry(2, 1.6, .3), mDark, 0, 3.3, 3.55); add(body, new THREE.BoxGeometry(1.6, 1.2, .12), STD(0x15100c, .8, .3, { emissive: 0x2a0c02 }), 0, 3.3, 3.72);
+/* slag door: water-cooled steel door in a frame; a hot slit glows under it while the bath is molten */
+const door = add(body, new THREE.BoxGeometry(2.2, 1.8, .3), mDark, 0, 3.35, 3.55);
+add(body, new THREE.BoxGeometry(1.6, 1.15, .14), STD(0x3a3e45, .55, .7, { map: steel }), 0, 3.5, 3.74);
+for (const y of [3.15, 3.45, 3.75]) { const r = add(body, new THREE.CylinderGeometry(.05, .05, 1.5, 10), mPipe, 0, y, 3.83); r.rotation.z = Math.PI/2; }
+const slagSlit = new THREE.Mesh(new THREE.PlaneGeometry(1.5, .12), new THREE.MeshBasicMaterial({ color: new THREE.Color(2.4, .7, .1), transparent: true, opacity: 0 })); slagSlit.position.set(0, 2.82, 3.72); body.add(slagSlit);
 const spout = add(body, new THREE.BoxGeometry(2.0, .28, 1.2), mPanel, 4.4, 4.45, 0); spout.rotation.z = -.2;
 add(body, new THREE.BoxGeometry(2.0, .45, .14), mPanel, 4.4, 4.62, .62).rotation.z = -.2; add(body, new THREE.BoxGeometry(2.0, .45, .14), mPanel, 4.4, 4.62, -.62).rotation.z = -.2;
 const tip = new THREE.Object3D(); tip.position.set(5.35, 4.25, 0); body.add(tip);
@@ -185,7 +189,7 @@ const scrapG = new THREE.Group(); body.add(scrapG); const scrap = [];
 for (let i = 0; i < 260; i++) {
   const a = rnd()*Math.PI*2, y = 2.05 + rnd()*2.45, r = Math.sqrt(rnd())*Math.min(2.3, 1.1 + (y - 2.05)*.9), k = rnd();
   const geo = k < .22 ? new THREE.BoxGeometry(.6 + rnd()*.6, .1 + rnd()*.12, .4 + rnd()*.5) : k < .5 ? new THREE.CylinderGeometry(.1 + rnd()*.12, .1 + rnd()*.12, .5 + rnd()*.6, 8) : new THREE.BoxGeometry(.3 + rnd()*.5, .2 + rnd()*.35, .3 + rnd()*.5);
-  const p = sh(new THREE.Mesh(geo, mScrap[i % 4])); p.position.set(Math.cos(a)*r, y, Math.sin(a)*r); p.rotation.set(rnd()*3, rnd()*3, rnd()*3); p.userData.thr = (y - 2.05)/2.45; scrapG.add(p); scrap.push(p);
+  const p = new THREE.Mesh(geo, mScrap[i % 4]); p.receiveShadow = true; p.position.set(Math.cos(a)*r, y, Math.sin(a)*r); p.rotation.set(rnd()*3, rnd()*3, rnd()*3); p.userData.thr = (y - 2.05)/2.45; scrapG.add(p); scrap.push(p);
 }
 const gap = new THREE.Mesh(new THREE.TorusGeometry(3.42, .07, 8, 96), new THREE.MeshBasicMaterial({ color: new THREE.Color(3, 1.1, .25), transparent: true, opacity: 0 })); gap.rotation.x = Math.PI/2; gap.position.y = 4.7; body.add(gap);
 
@@ -286,7 +290,7 @@ function applyTargets() {
   S.roof.t = open ? 1.7 : 0; S.roofLift.t = open ? 1.6 : 0;
   S.tilt.t = M.phase.id === 'colata' ? -.46*ease(clamp(M.c*1.7)) : 0;
   const scrapTop = 1.5 + 3.0*(M.charged*(1 - M.m)), bathY = 1.75 + 2.0*(M.charged*M.m);
-  const tipY = M.phase.id === 'fusione' ? Math.max(scrapTop*.96, bathY) + .5 : 8.4;
+  const tipY = M.phase.id === 'fusione' ? Math.max(scrapTop*.96, bathY) + .5 : 10.4;
   S.eY.forEach(s => s.t = tipY + 4.7);
   if (M.phase.id !== 'carica') { S.bx.t = -17; S.by.t = 17; S.br.t = 0; }
   else if (t < 1.8) { S.bx.t = YARD_X; S.by.t = 3.83; S.br.t = 0; }
@@ -323,6 +327,7 @@ function frame(dt) {
   const inBath = bath.visible ? M.heat : 0;
   glow.intensity = (inBath*16 + (M.phase.id === 'fusione' ? 8*(1 - M.m*.4) : 0))*fl; glow.position.y = lvl + 1.3;
   glow2.intensity = lf > .02 ? 9*fl*clamp(lf*4) : 0;
+  slagSlit.material.opacity = clamp(inBath*1.2)*fl;
   gap.material.opacity = M.phase.id === 'fusione' ? clamp(.55*fl + M.m*.2) : 0;
   // arcs
   const melting = M.phase.id === 'fusione';
