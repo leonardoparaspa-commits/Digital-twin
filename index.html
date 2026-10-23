@@ -161,7 +161,7 @@ const door = add(body, new THREE.BoxGeometry(2.2, 1.8, .3), STD(0x23252a, .85, .
 const mDoor = STD(0x34373c, .85, .25, { map: steel, envMapIntensity: .2 }), mDoorPipe = STD(0x6d7178, .7, .3, { envMapIntensity: .2 });
 add(body, new THREE.BoxGeometry(1.6, 1.15, .14), mDoor, 0, 3.5, 3.74);
 for (const y of [3.15, 3.45, 3.75]) { const r = add(body, new THREE.CylinderGeometry(.05, .05, 1.5, 10), mDoorPipe, 0, y, 3.86); r.rotation.z = Math.PI/2; }
-const slagSlit = new THREE.Mesh(new THREE.PlaneGeometry(1.5, .12), new THREE.MeshBasicMaterial({ color: new THREE.Color(2.4, .7, .1), transparent: true, opacity: 0 })); slagSlit.position.set(0, 2.82, 3.76); slagSlit.material.depthWrite = false; body.add(slagSlit);
+const slagSlit = new THREE.Mesh(new THREE.PlaneGeometry(1.4, .06), new THREE.MeshBasicMaterial({ color: new THREE.Color(1.6, .32, .04), transparent: true, opacity: 0 })); slagSlit.position.set(0, 2.82, 3.76); slagSlit.material.depthWrite = false; body.add(slagSlit);
 const spout = add(body, new THREE.BoxGeometry(2.0, .28, 1.2), mPanel, 4.4, 4.45, 0); spout.rotation.z = -.2;
 add(body, new THREE.BoxGeometry(2.0, .45, .14), mPanel, 4.4, 4.62, .62).rotation.z = -.2; add(body, new THREE.BoxGeometry(2.0, .45, .14), mPanel, 4.4, 4.62, -.62).rotation.z = -.2;
 const tip = new THREE.Object3D(); tip.position.set(5.35, 4.25, 0); body.add(tip);
@@ -328,7 +328,7 @@ function frame(dt) {
   const inBath = bath.visible ? M.heat : 0;
   glow.intensity = (inBath*16 + (M.phase.id === 'fusione' ? 8*(1 - M.m*.4) : 0))*fl; glow.position.y = lvl + 1.3;
   glow2.intensity = lf > .02 ? 9*fl*clamp(lf*4) : 0;
-  slagSlit.material.opacity = clamp(inBath*1.2)*fl;
+  slagSlit.material.opacity = clamp(inBath*.9)*fl;
   gap.material.opacity = M.phase.id === 'fusione' ? clamp(.55*fl + M.m*.2) : 0;
   // arcs
   const melting = M.phase.id === 'fusione';
