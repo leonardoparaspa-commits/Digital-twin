@@ -277,13 +277,13 @@ function emitSmoke(x, y, z, big) { for (const s of smoke) if (s.userData.life <=
 /* ---------- state ---------- */
 const FROZEN = window.__static != null;
 let t = FROZEN ? window.__static : 0, playing = !reduce && !FROZEN, auto = playing, hold = 0;
-const S = { roof: new Spring(1.15, .55, 1), roofLift: new Spring(1, .55, 1), tilt: new Spring(0, .55, 1), eY: [0, 1, 2].map(() => new Spring(14, .6, 1)), bx: new Spring(-17, .65, 1), by: new Spring(17, .65, 1), br: new Spring(0, .5, .85), car: new Spring(0, 1.1, 1) };
+const S = { roof: new Spring(1.7, .55, 1), roofLift: new Spring(1, .55, 1), tilt: new Spring(0, .55, 1), eY: [0, 1, 2].map(() => new Spring(14, .6, 1)), bx: new Spring(-17, .65, 1), by: new Spring(17, .65, 1), br: new Spring(0, .5, .85), car: new Spring(0, 1.1, 1) };
 if (FROZEN) {}
 const worldTip = new THREE.Vector3(), vB = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0);
 let M = model(t);
 function applyTargets() {
   M = model(t); const open = M.phase.id !== 'fusione';
-  S.roof.t = open ? 1.15 : 0; S.roofLift.t = open ? 1.6 : 0;
+  S.roof.t = open ? 1.7 : 0; S.roofLift.t = open ? 1.6 : 0;
   S.tilt.t = M.phase.id === 'colata' ? -.46*ease(clamp(M.c*1.7)) : 0;
   const scrapTop = 1.5 + 3.0*(M.charged*(1 - M.m)), bathY = 1.75 + 2.0*(M.charged*M.m);
   const tipY = M.phase.id === 'fusione' ? Math.max(scrapTop*.96, bathY) + .5 : 8.4;
