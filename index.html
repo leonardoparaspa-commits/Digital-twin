@@ -396,7 +396,7 @@ let last = performance.now(); sync();
 [S.roof, S.roofLift, S.tilt, ...S.eY, S.bx, S.by, S.br, S.car].forEach(k => k.set(k.t));
 const SPEED = { carica: .8, fusione: 5, colata: 1.6 }; // replay minutes per second, per phase
 function loop(now) {
-  const dt = Math.min(.05, (now - last)/1000); last = now;
+  const dt = clamp((now - last)/1000, 0, .05); last = now;
   if (playing) { t += dt*SPEED[model(t).phase.id]; if (t >= END) { t = END; if (auto) { hold += dt; if (hold > 3.6) { t = 0; hold = 0; } } else playing = false; } sync(); }
   frame(dt); requestAnimationFrame(loop);
 }
