@@ -229,7 +229,8 @@ const chain = new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints([[
 /* ladle on its car */
 const ladleG = new THREE.Group(); ladleG.position.set(7.7, 0, 0); scene.add(ladleG);
 add(ladleG, new THREE.BoxGeometry(4.4, .7, 3.6), STD(0x2b2824, .75, .5), 0, .75, 0);
-for (const [x, z] of [[-1.6, -1.15], [1.6, -1.15], [-1.6, 1.15], [1.6, 1.15]]) { const w = add(ladleG, new THREE.CylinderGeometry(.42, .42, .3, 24), mDark, x, .42, z); w.rotation.x = Math.PI/2; }
+const wheels = [];
+for (const [x, z] of [[-1.6, -1.15], [1.6, -1.15], [-1.6, 1.15], [1.6, 1.15]]) { const w = add(ladleG, new THREE.CylinderGeometry(.42, .42, .3, 24), mDark, x, .42, z); w.rotation.x = Math.PI/2; wheels.push(w); }
 add(ladleG, new THREE.CylinderGeometry(1.6, 1.3, 1.75, 40, 1, true), STD(0x464a52, .5, .75, { map: steel, side: THREE.DoubleSide }), 0, 1.97, 0);
 add(ladleG, new THREE.CylinderGeometry(1.45, 1.2, 1.7, 40, 1, true), mBrick, 0, 1.97, 0);
 add(ladleG, new THREE.CylinderGeometry(1.25, 1.25, .1, 40), STD(0x1a1512, .9, 0), 0, 1.2, 0);
@@ -276,7 +277,7 @@ function emitSmoke(x, y, z, big) { for (const s of smoke) if (s.userData.life <=
 /* ---------- state ---------- */
 const FROZEN = window.__static != null;
 let t = FROZEN ? window.__static : 0, playing = !reduce && !FROZEN, auto = playing, hold = 0;
-const S = { roof: new Spring(1.15, .55, 1), roofLift: new Spring(1, .55, 1), tilt: new Spring(0, .55, 1), eY: [0, 1, 2].map(() => new Spring(14, .6, 1)), bx: new Spring(-17, .65, 1), by: new Spring(17, .65, 1), br: new Spring(0, .5, .85), car: new Spring(1, .7, 1) };
+const S = { roof: new Spring(1.15, .55, 1), roofLift: new Spring(1, .55, 1), tilt: new Spring(0, .55, 1), eY: [0, 1, 2].map(() => new Spring(14, .6, 1)), bx: new Spring(-17, .65, 1), by: new Spring(17, .65, 1), br: new Spring(0, .5, .85), car: new Spring(0, 1.1, 1) };
 if (FROZEN) {}
 const worldTip = new THREE.Vector3(), vB = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0);
 let M = model(t);
@@ -292,7 +293,7 @@ function applyTargets() {
   else if (t < 3) { S.bx.t = 0; S.by.t = 9.3; S.br.t = 0; }
   else if (t < 5.4) { S.bx.t = 0; S.by.t = 9.3; S.br.t = 1.55; }
   else { S.bx.t = -17; S.by.t = 17; S.br.t = 0; }
-  S.car.t = M.phase.id === 'colata' ? 1 : 1;
+  S.car.t = t >= 54.85 ? 9.5 : 0; // full ladle leaves on its car towards the caster
 }
 function frame(dt) {
   clock += dt; bathMat.uniforms.time.value = clock;
@@ -310,9 +311,11 @@ function frame(dt) {
   scrap.forEach(p => p.visible = p.userData.thr < scrapLvl && M.phase.id !== 'colata');
   const lf = M.phase.id === 'colata' ? M.c : (t >= 55 ? 1 : 0);
   ladleFill.position.y = 1.3 + 1.2*lf; ladleFill.visible = lf > .02;
-  const w = Math.max(.001, lf); scaleBar.scale.x = w; scaleBar.position.x = -.33*(1 - w);
-  scaleTick.position.x = -.33 + .66*w; scaleTick.visible = lf > .02 && lf < .99;
-  ladleG.position.y = -.035*lf;
+  const carX = S.car.step(dt); ladleG.position.x = 7.7 + carX; glow2.position.x = ladleG.position.x; wheels.forEach(w => w.rotation.y = -carX/.42);
+  const w = Math.max(.001, lf*clamp(1 - carX/2.5)); scaleBar.scale.x = w; scaleBar.position.x = -.33*(1 - w);
+  scaleTick.position.x = -.33 + .66*w; scaleTick.visible = w > .02 && w < .99;
+  
+  ladleG.position.y = -.035*lf*clamp(1 - carX);
   const onYard = Math.abs(hook.position.x - YARD_X) < .3 && hook.position.y < 4.1 ? 1 : 0;
   yardW = clamp(yardW + (onYard - yardW)*clamp(dt*3)); const yw = Math.max(.001, yardW); yardBar.scale.x = yw; yardBar.position.x = -.33*(1 - yw); yardG.position.y = -.03*yardW; // platform settles slightly under load
   // glow lights
@@ -377,7 +380,7 @@ PH.forEach(p => {
   b.addEventListener('click', () => { t = p.from + (p.id === 'carica' ? 0 : .01); auto = false; hold = 0; sync(); }); tabs.appendChild(b);
   const s = document.createElement('div'); s.className = 'seg'; s.style.flex = `${p.to - p.from} 0 0`; s.dataset.id = p.id; s.style.setProperty('--pc', PC[p.id]); s.innerHTML = '<div class="fill"></div>'; segs.appendChild(s);
 });
-playBtn.addEventListener('click', () => { playing = !playing; if (playing && t >= END) t = 0; auto = false; sync(); });
+playBtn.addEventListener('click', () => { playing = !playing; if (playing && t >= END) { t = 0; S.car.set(0); } auto = false; sync(); });
 function scrub(e) { const r = strip.getBoundingClientRect(); t = clamp((e.clientX - r.left)/r.width)*END; playing = false; auto = false; sync(); }
 strip.addEventListener('pointerdown', e => { strip.setPointerCapture(e.pointerId); strip.classList.add('drag'); scrub(e); strip.onpointermove = scrub; }); const endDrag = () => { strip.onpointermove = null; strip.classList.remove('drag'); }; strip.addEventListener('pointerup', endDrag); strip.addEventListener('pointercancel', endDrag);
 strip.addEventListener('keydown', e => { const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0; if (d) { t = clamp(t + d, 0, END); playing = false; auto = false; sync(); e.preventDefault(); } });
@@ -393,7 +396,7 @@ let last = performance.now(); sync();
 [S.roof, S.roofLift, S.tilt, ...S.eY, S.bx, S.by, S.br, S.car].forEach(k => k.set(k.t));
 function loop(now) {
   const dt = Math.min(.05, (now - last)/1000); last = now;
-  if (playing) { t += dt*2.5; if (t >= END) { t = END; if (auto) { hold += dt; if (hold > 2.2) { t = 0; hold = 0; } } else playing = false; } sync(); }
+  if (playing) { t += dt*2.5; if (t >= END) { t = END; if (auto) { hold += dt; if (hold > 3.2) { t = 0; hold = 0; S.car.set(0); } } else playing = false; } sync(); }
   frame(dt); requestAnimationFrame(loop);
 }
 requestAnimationFrame(loop);
