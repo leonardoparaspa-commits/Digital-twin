@@ -247,6 +247,18 @@ add(disp, new THREE.BoxGeometry(.9, .6, .2), STD(0x15171a, .4, .5), 0, 0, 0);
 add(disp, new THREE.PlaneGeometry(.74, .42), new THREE.MeshBasicMaterial({ color: 0x0a1410 }), 0, 0, .105).castShadow = false;
 const scaleBar = add(disp, new THREE.PlaneGeometry(.66, .3), new THREE.MeshBasicMaterial({ color: new THREE.Color(.3, 1.1, .5) }), 0, 0, .11); scaleBar.castShadow = false;
 const scaleTick = add(disp, new THREE.PlaneGeometry(.02, .36), new THREE.MeshBasicMaterial({ color: 0xffffff }), 0, 0, .115); scaleTick.castShadow = false;
+/* scrap-yard scale: the bucket is weighed here before the crane lifts it */
+const YARD_X = -11.5;
+const yardG = new THREE.Group(); yardG.position.set(YARD_X, 0, 0); scene.add(yardG);
+add(yardG, new THREE.BoxGeometry(3.4, .12, 3.4), STD(0x3b3e44, .45, .85, { map: steel }), 0, .06, 0);
+for (const [x, z] of [[-1.5, -1.5], [1.5, -1.5], [-1.5, 1.5], [1.5, 1.5]]) add(yardG, new THREE.CylinderGeometry(.14, .18, .1, 16), mClamp, x, .14, z);
+const yHatch = new THREE.Mesh(new THREE.PlaneGeometry(3.8, 3.8), STD(0xc9a21e, .7, .1)); yHatch.rotation.x = -Math.PI/2; yHatch.position.y = .006; yardG.add(yHatch);
+add(yardG, new THREE.BoxGeometry(.18, 3.0, .18), mDark, -1.9, 1.5, -1.9);
+const ydisp = new THREE.Group(); ydisp.position.set(-1.9, 3.2, -1.9); ydisp.rotation.y = .7; ydisp.scale.setScalar(2); yardG.add(ydisp);
+add(ydisp, new THREE.BoxGeometry(.9, .6, .2), STD(0x15171a, .4, .5), 0, 0, 0);
+add(ydisp, new THREE.PlaneGeometry(.74, .42), new THREE.MeshBasicMaterial({ color: 0x0a1410 }), 0, 0, .105).castShadow = false;
+const yardBar = add(ydisp, new THREE.PlaneGeometry(.66, .3), new THREE.MeshBasicMaterial({ color: new THREE.Color(.3, 1.1, .5) }), 0, 0, .11); yardBar.castShadow = false;
+let yardW = 0;
 const fillMat = bathMat.clone(); fillMat.uniforms = { time: bathMat.uniforms.time, heat: { value: 1 } };
 const ladleFill = new THREE.Mesh(new THREE.CircleGeometry(1.3, 48), fillMat); ladleFill.rotation.x = -Math.PI/2; ladleG.add(ladleFill);
 const stream = new THREE.Mesh(new THREE.CylinderGeometry(.16, .12, 1, 14), new THREE.MeshBasicMaterial({ color: new THREE.Color(2.6, .8, .14) })); scene.add(stream);
@@ -276,7 +288,7 @@ function applyTargets() {
   const tipY = M.phase.id === 'fusione' ? Math.max(scrapTop*.96, bathY) + .5 : 8.4;
   S.eY.forEach(s => s.t = tipY + 4.7);
   if (M.phase.id !== 'carica') { S.bx.t = -17; S.by.t = 17; S.br.t = 0; }
-  else if (t < 1) { S.bx.t = -1.5; S.by.t = 11; S.br.t = 0; }
+  else if (t < 1.8) { S.bx.t = YARD_X; S.by.t = 3.83; S.br.t = 0; }
   else if (t < 3) { S.bx.t = 0; S.by.t = 9.3; S.br.t = 0; }
   else if (t < 5.4) { S.bx.t = 0; S.by.t = 9.3; S.br.t = 1.55; }
   else { S.bx.t = -17; S.by.t = 17; S.br.t = 0; }
@@ -300,7 +312,9 @@ function frame(dt) {
   ladleFill.position.y = 1.3 + 1.2*lf; ladleFill.visible = lf > .02;
   const w = Math.max(.001, lf); scaleBar.scale.x = w; scaleBar.position.x = -.33*(1 - w);
   scaleTick.position.x = -.33 + .66*w; scaleTick.visible = lf > .02 && lf < .99;
-  ladleG.position.y = -.035*lf; // platform settles slightly under load
+  ladleG.position.y = -.035*lf;
+  const onYard = Math.abs(hook.position.x - YARD_X) < .3 && hook.position.y < 4.1 ? 1 : 0;
+  yardW = clamp(yardW + (onYard - yardW)*clamp(dt*3)); const yw = Math.max(.001, yardW); yardBar.scale.x = yw; yardBar.position.x = -.33*(1 - yw); yardG.position.y = -.03*yardW; // platform settles slightly under load
   // glow lights
   const fl = .85 + Math.sin(clock*23)*.07 + Math.sin(clock*9.1)*.08;
   const inBath = bath.visible ? M.heat : 0;
