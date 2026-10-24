@@ -329,8 +329,10 @@ const NB = 4, TCUT = [.60, .65, .70, .75], bars = [];
 // cooling bed (walking rakes) beside the run-out, and a magnet crane above it
 for (let z = -2.6; z <= 2.6; z += .65) add(caster, new THREE.BoxGeometry(BIL_LEN + 1, .12, .14), mTower, RACK_X, CY - .32, z);
 for (const z of [-2.8, 2.8]) for (const dx of [-1.8, 1.8]) add(caster, new THREE.BoxGeometry(.25, CY, .25), mTower, RACK_X + dx, CY/2 - .2, z);
+for (const dx of [-.75, .75]) add(caster, new THREE.BoxGeometry(.3, .45, 40), mTower, RACK_X + dx, 14.45, -14); // runway girders the magnet trolley rides on
+for (const z of [4.5, -32]) for (const dx of [-.75, .75]) add(caster, new THREE.BoxGeometry(.35, 14.2, .35), mTower, RACK_X + dx, 7.1, z);
 const crane3 = new THREE.Group(); caster.add(crane3);
-add(crane3, new THREE.BoxGeometry(1.2, .5, 1.2), mDark, RACK_X, 14, 0);
+add(crane3, new THREE.BoxGeometry(1.9, .5, 1.2), mDark, RACK_X, 14, 0);
 const cable3 = add(crane3, new THREE.CylinderGeometry(.03, .03, 1, 6), mPipe, RACK_X, 11, 0); cable3.castShadow = false;
 const magnet = add(crane3, new THREE.BoxGeometry(1.4, .35, 2.2), mDark, RACK_X, 9, 0);
 for (let k = 0; k < NB; k++) { const m = new THREE.Mesh(new THREE.CylinderGeometry(STRAND_R, STRAND_R, BIL_LEN, 12), new THREE.MeshBasicMaterial({ color: HOT.clone() })); m.rotation.z = Math.PI/2; m.visible = false; caster.add(m); bars.push(m); }
