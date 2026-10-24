@@ -101,7 +101,7 @@ renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.75));
 renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 const scene = new THREE.Scene(); scene.background = new THREE.Color(0x0b0b0e); scene.fog = new THREE.Fog(0x0b0b0e, 34, 80);
 const pm = new THREE.PMREMGenerator(renderer); scene.environment = pm.fromScene(new THREE.RoomEnvironment(), .04).texture;
-const camera = new THREE.PerspectiveCamera(34, 2, .1, 140);
+const camera = new THREE.PerspectiveCamera(34, 2, .1, 140); window.__cam = camera;
 const composer = new THREE.EffectComposer(renderer);
 composer.addPass(new THREE.RenderPass(scene, camera));
 const bloom = new THREE.UnrealBloomPass(new THREE.Vector2(512, 512), .5, .45, 1.5); composer.addPass(bloom);
@@ -503,5 +503,86 @@ function loop(now) {
 }
 requestAnimationFrame(loop);
 window.__ready = true;
+})();
+</script>
+<style>
+:root{--sb:196px;--rp:372px;--kh:92px}
+.good{color:#5fc9a6}.warn{color:#f59a3a}.bad{color:#ee6a5f}
+#stage{left:var(--sb);right:var(--rp);top:var(--kh)}
+.title{left:calc(var(--sb) + 20px);top:calc(var(--kh) + 14px)}
+.hint{display:none}
+.dock{left:calc(var(--sb) + (100% - var(--sb) - var(--rp))/2);width:min(560px,calc(100% - var(--sb) - var(--rp) - 32px))}
+.side{position:fixed;left:0;top:0;bottom:0;width:var(--sb);background:#0e0e12;border-right:1px solid var(--line);padding:20px 14px;display:flex;flex-direction:column;gap:4px}
+.side .logo{font-weight:600;font-size:14px;padding:0 8px 16px;letter-spacing:-.01em}.side .logo small{display:block;color:var(--muted);font-weight:400;font-size:11px;margin-top:2px}
+.side a{padding:8px 10px;border-radius:8px;color:var(--muted);font-weight:500;display:flex;justify-content:space-between}
+.side a.on{background:rgba(255,255,255,.07);color:var(--fg)}
+.side a i{font-style:normal;font-size:11px;background:#f59a3a22;color:#f59a3a;border-radius:99px;padding:0 7px;line-height:18px}
+.side .foot{margin-top:auto;color:var(--muted);font-size:11px;padding:0 8px}
+.kpis{position:fixed;left:var(--sb);right:var(--rp);top:0;height:var(--kh);display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:16px 16px 0 16px}
+.k{background:#13131a;border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+.k span{color:var(--muted);font-size:11px;display:block}.k b{font-size:22px;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums}.k em{font-style:normal;font-size:11px;color:var(--muted);margin-left:6px}
+.rp{position:fixed;right:0;top:0;bottom:0;width:var(--rp);background:#0e0e12;border-left:1px solid var(--line);padding:16px;display:flex;flex-direction:column;gap:14px;overflow:hidden}
+.rp h3{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.sel{background:#13131a;border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.sel h2{font-size:14px;font-weight:600;display:flex;justify-content:space-between;align-items:center}
+.sel dl{display:grid;grid-template-columns:1fr auto;gap:5px 12px;margin-top:10px}.sel dt{color:var(--muted)}.sel dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
+.sel hr{grid-column:1/-1;border:0;border-top:1px solid var(--line);margin:3px 0}
+.badge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:99px;background:#f59a3a22;color:#f59a3a}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:12px}
+th{color:var(--muted);font-weight:500;text-align:left;padding:4px 0}th:last-child,td:last-child{text-align:right}
+td{padding:6px 0;border-top:1px solid var(--line)}tr.cur td{color:#fff;background:rgba(255,255,255,.04)}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px}
+.ch{background:#13131a;border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.ch svg{width:100%;height:96px;display:block}
+.leg{display:flex;gap:14px;color:var(--muted);font-size:11px;margin-top:4px}
+.tag{position:fixed;transform:translate(-50%,-100%);padding:5px 9px;border-radius:8px;background:rgba(14,14,18,.82);border:1px solid rgba(255,255,255,.1);font-size:11px;pointer-events:none;white-space:nowrap}
+.tag b{display:block;color:var(--muted);font-weight:500;font-size:10px;letter-spacing:.06em}
+</style>
+<style>.rp tr[data-i]{cursor:pointer}.rp tr[data-i]:hover td{background:rgba(255,255,255,.04)}.k b,.sel dd{transition:color .2s}</style>
+<nav class="side"><div class="logo">Twin colata<small>Forno EAF · Dalmine</small></div>
+<a class="on">Colate</a><a>MAM <i>2</i></a><a>Anomalie <i>3</i></a><a>Note di turno</a><a>Modello ML</a>
+<div class="foot">Tutti i dati sono simulati</div></nav>
+<div class="kpis">
+<div class="k"><span>MAM ufficiale (sett.)</span><b>1097</b></div>
+<div class="k"><span>MAM corretta</span><b class="good">1091</b><em>−6</em></div>
+<div class="k"><span>Liquido non letto</span><b class="warn">3,4 t</b><em>sett.</em></div>
+<div class="k"><span>Colate da rivedere</span><b class="bad">3</b><em>su 62</em></div></div>
+<aside class="rp"><div class="sel" id="sel"></div>
+<div><h3>Ultime colate</h3><table id="tb"></table></div>
+<div><h3>MAM per colata</h3><div class="ch"><svg viewBox="0 0 320 96" preserveAspectRatio="none">
+<line x1="0" x2="320" y1="60" y2="60" stroke="#444" stroke-dasharray="3 4"/>
+<polyline fill="none" stroke="#8d8f96" stroke-width="2" points="0,34 40,28 80,36 120,12 160,30 200,22 240,26 280,16 320,20"/>
+<polyline fill="none" stroke="#5fc9a6" stroke-width="2" points="0,62 40,58 80,64 120,60 160,66 200,58 240,62 280,60 320,64"/></svg>
+<div class="leg"><span>━ ufficiale</span><span style="color:#5fc9a6">━ corretta</span><span>┄ obiettivo 1090</span></div></div></div></aside>
+<div class="tag" id="t1"><b>PARCO ROTTAME</b><span id="t1v"></span></div>
+<div class="tag" id="t2"><b>BILANCIA DI COLATA</b><span id="t2v"></span></div>
+<script>
+(() => {
+// dati simulati: kg caricati, kg liquido letto, kg liquido atteso, MAM ufficiale / corretta
+const C = [
+ {id:'24-0409', c:100200, l:91650, a:91690, m:[1093,1093], s:'ok', lab:'ok', col:'#5fc9a6'},
+ {id:'24-0410', c:100500, l:91720, a:91900, m:[1096,1094], s:'ok', lab:'ok', col:'#5fc9a6'},
+ {id:'24-0411', c:101100, l:83100, a:92000, m:[1217,1099], s:'emergency', lab:'emergenza', col:'#ee6a5f'},
+ {id:'24-0412', c:100800, l:92170, a:92480, m:[1094,1090], s:'tara', lab:'tara', col:'#f59a3a'},
+ {id:'24-0413', c:100400, l:91560, a:91850, m:[1096,1093], s:'tara', lab:'tara', col:'#f59a3a'}];
+const BADGE = {ok:['In regola','#5fc9a6'], tara:['Tara rilevata','#f59a3a'], emergency:['Emergenza non registrata','#ee6a5f']};
+const f = n => n.toLocaleString('it-IT') + ' kg';
+const $ = id => document.getElementById(id);
+let cur = 3;
+function render() {
+  const d = C[cur], diff = d.l - d.a, b = BADGE[d.s];
+  $('sel').innerHTML = `<h2>Colata ${d.id} <span class="badge" style="background:${b[1]}22;color:${b[1]}">${b[0]}</span></h2>
+  <dl><dt>Caricato</dt><dd>${f(d.c)}</dd><dt>Liquido letto</dt><dd>${f(d.l)}</dd><dt>Liquido atteso</dt><dd>${f(d.a)}</dd>
+  <dt>Scarto</dt><dd style="color:${Math.abs(diff)>1000?'#ee6a5f':Math.abs(diff)>100?'#f59a3a':'inherit'}">${diff<0?'−':''}${Math.abs(diff).toLocaleString('it-IT')} kg</dd><hr>
+  <dt>MAM ufficiale</dt><dd>${d.m[0]}</dd><dt>MAM corretta</dt><dd class="good">${d.m[1]}</dd></dl>`;
+  $('tb').innerHTML = '<tr><th>Colata</th><th>Scarto</th><th>Stato</th></tr>' + C.map((x,i) => { const e = x.l - x.a;
+    return `<tr data-i="${i}" class="${i===cur?'cur':''}"><td>${x.id}</td><td>−${Math.abs(e).toLocaleString('it-IT')} kg</td><td><span class="dot" style="background:${x.col}"></span>${x.lab}</td></tr>`; }).join('');
+  $('t1v').textContent = f(d.c); $('t2v').textContent = `${d.l.toLocaleString('it-IT')} letti · ${d.a.toLocaleString('it-IT')} attesi`;
+}
+$('tb').addEventListener('click', e => { const r = e.target.closest('tr[data-i]'); if (r) { cur = +r.dataset.i; render(); } });
+render();
+const pj = (x, y, z, el) => { const r = $('stage').getBoundingClientRect(), v = new THREE.Vector3(x, y, z).project(window.__cam);
+  el.style.left = (r.left + (v.x+1)/2*r.width) + 'px'; el.style.top = (r.top + (1-v.y)/2*r.height) + 'px'; };
+(function tick() { if (window.__cam) { pj(-11.5, 4.2, 0, $('t1')); pj(7.7, 5.2, 0, $('t2')); } requestAnimationFrame(tick); })();
 })();
 </script>
