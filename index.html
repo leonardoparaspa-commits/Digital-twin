@@ -785,7 +785,7 @@ function live(t, yard, fill) {
     $('bG').style.left = (gap < 0 ? 50 - w : 50) + '%'; $('bG').style.width = Math.max(w, .8) + '%';
   } else {
     p.textContent = 'In corso'; p.style.setProperty('--c', 'var(--ink2)');
-    cancelAnimationFrame(raf); shown = null; $('cMam').innerHTML = '<span style="opacity:.14">0000</span>'; $('cOff').textContent = '—'; $('cDiff').textContent = 'a fine colata';
+    cancelAnimationFrame(raf); shown = null; $('cMam').innerHTML = '<span style="opacity:.14">0000</span>'; $('cOff').textContent = '—'; $('cDiff').textContent = '—';
     $('cGap').textContent = 'in attesa'; bal.style.setProperty('--c', 'var(--ink2)');
     $('bG').style.left = '50%'; $('bG').style.width = '0%';
   }
