@@ -287,6 +287,15 @@ for (let i = 0; i < ARC_N; i++) {
   const m = new THREE.Mesh(new THREE.CylinderGeometry(STRAND_R, STRAND_R, 2*CR*Math.sin((a1 - a0)/2) + .02, 12), mStrand);
   m.position.set(CX + CR + CR*Math.cos(am), CY + CR + CR*Math.sin(am), 0); m.rotation.z = am + Math.PI/2 + Math.PI; caster.add(m); arcSeg.push(m);
 }
+// guide rollers (pairs on both sides of the strand) and water-spray cooling zones along the curved path
+const PATH_V = MOLD_Y - ARC_Y, PATH_A = Math.PI/2*CR, sprays = [];
+const pathAt = u => { if (u < PATH_V) return { x: CX, y: MOLD_Y - u, nx: 1, ny: 0, ang: 0 }; const th = Math.PI + (u - PATH_V)/CR; return { x: CX + CR + CR*Math.cos(th), y: CY + CR + CR*Math.sin(th), nx: Math.cos(th), ny: Math.sin(th), ang: th + Math.PI/2 + Math.PI }; };
+const mRoll = STD(0xb7bcc3, .35, .85), mSpray = new THREE.MeshBasicMaterial({ color: 0x9fd4ff, transparent: true, opacity: .16, depthWrite: false });
+for (let u = 1.2; u < PATH_V + PATH_A - .3; u += .85) {
+  const q = pathAt(u);
+  for (const sg of [-1, 1]) { const r = add(caster, new THREE.CylinderGeometry(.14, .14, 1.0, 12), mRoll, q.x + sg*q.nx*(STRAND_R + .15), q.y + sg*q.ny*(STRAND_R + .15), 0); r.rotation.x = Math.PI/2; }
+  if (u > 2.4) { const sp = new THREE.Mesh(new THREE.CylinderGeometry(.5, .5, .55, 14, 1, true), mSpray); sp.position.set(q.x, q.y, 0); sp.rotation.z = q.ang; sp.userData.u = u; caster.add(sp); sprays.push(sp); }
+}
 const streamTun = new THREE.Mesh(new THREE.CylinderGeometry(.1, .1, 1, 10), new THREE.MeshBasicMaterial({ color: new THREE.Color(2.6, .8, .14) })); caster.add(streamTun);
 // roller table
 for (let x = HX - 1; x <= RACK_X + 1; x += 1.3) { const r = add(caster, new THREE.CylinderGeometry(.16, .16, 1.6, 12), mPipe, x, CY - .45, 0); r.rotation.x = Math.PI/2; }
@@ -380,6 +389,7 @@ function frame(dt) {
   // casting: strand grows from the mold along the curved path, shear cuts bars that ride to the scale
   const V = MOLD_Y - ARC_Y, AL = Math.PI/2*CR, H = SHEAR_X - HX, head = (V + AL + H)*clamp((tau - .46)/.17);
   const vL = Math.min(head, V); strandV.visible = vL > .01; strandV.position.set(CX, MOLD_Y - vL/2, 0); strandV.scale.y = Math.max(.001, vL);
+  sprays.forEach(sp => sp.visible = head > sp.userData.u + .2);
   arcSeg.forEach((m, i) => m.visible = head >= V + (i + .5)*AL/ARC_N);
   const hL = clamp(head - V - AL, 0, H); strandH.visible = hL > .01; strandH.position.set(HX + hL/2, CY, 0); strandH.scale.y = Math.max(.001, hL);
   const kk = Math.floor((tau - .63)/.07), ph = (tau - .63 - kk*.07)/.07, stub = tau >= .63 && tau < .91 ? ph*BIL_LEN : 0;
