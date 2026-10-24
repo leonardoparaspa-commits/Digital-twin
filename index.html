@@ -466,7 +466,8 @@ function frame(dt) {
   const sb = 14 + r*.3; key.position.set(cxv + 12, 24, 14); key.target.position.set(cxv, 0, 0);
   if (Math.abs(key.shadow.camera.right - sb) > .5) { Object.assign(key.shadow.camera, { left: -sb, right: sb, top: sb, bottom: -sb }); key.shadow.camera.updateProjectionMatrix(); }
   scene.fog.near = r*1.1; scene.fog.far = r*2.6; // fog keeps the same feel at every zoom
-  camera.position.set(cxv + r*Math.sin(p)*Math.sin(a), Math.max(1.2, 3.6 + r*Math.cos(p)), r*Math.sin(p)*Math.cos(a)); camera.lookAt(cxv, 3.6, 0); // camera never goes below the floor
+  const px = pan.x.step(dt), pz = pan.z.step(dt);
+  camera.position.set(cxv + px + r*Math.sin(p)*Math.sin(a), Math.max(1.2, 3.6 + r*Math.cos(p)), pz + r*Math.sin(p)*Math.cos(a)); camera.lookAt(cxv + px, 3.6, pz); // camera never goes below the floor
   composer.render();
 }
 
@@ -482,6 +483,7 @@ stage.addEventListener('pointermove', e => {
   if (!pointers.has(e.pointerId)) return; pointers.set(e.pointerId, e);
   if (pointers.size === 2) { const [p1, p2] = [...pointers.values()]; rad.set(clamp(r0*pinch0/Math.hypot(p1.clientX - p2.clientX, p1.clientY - p2.clientY), R_MIN, R_MAX)); return; }
   if (!drag) return; const dx = e.clientX - drag.x, dy = e.clientY - drag.y; drag = { x: e.clientX, y: e.clientY };
+  if (e.shiftKey || e.buttons === 2) { panBy(-dx*1.6, -dy*1.6); return; }
   raw.a -= dx*.0055; raw.p -= dy*.0055; const c = clamp(raw.p, PO_MIN, PO_MAX); az.set(raw.a); po.set(c + rubber(raw.p - c, .25));
   hist.push({ t: performance.now(), a: raw.a, p: raw.p }); if (hist.length > 6) hist.shift();
 });
@@ -495,8 +497,19 @@ function release(e) {
   po.t = clamp(po.x + proj(vel.p), PO_MIN, PO_MAX); po.v = vel.p;
 }
 stage.addEventListener('pointerup', release); stage.addEventListener('pointercancel', release);
-stage.addEventListener('wheel', e => { e.preventDefault(); rad.t = clamp(rad.t + e.deltaY*.02, R_MIN, R_MAX); }, { passive: false });
-stage.addEventListener('dblclick', () => { az.t = HOME.az; po.t = HOME.po; rad.t = HOME.r; });
+// trackpad: two fingers move the view across the floor, pinch zooms; a mouse wheel zooms; shift or right drag also pans
+const PAN_MAX = 40, pan = { x: new Spring(0, .3, 1), z: new Spring(0, .3, 1) };
+function panBy(dx, dy) { const a = az.x, k = (rad.x + S.cr.x)*.0016;
+  pan.x.t = clamp(pan.x.t + (dx*Math.cos(a) + dy*Math.sin(a))*k, -PAN_MAX, PAN_MAX); pan.z.t = clamp(pan.z.t + (-dx*Math.sin(a) + dy*Math.cos(a))*k, -PAN_MAX, PAN_MAX); }
+function resetPan() { pan.x.t = 0; pan.z.t = 0; }
+stage.addEventListener('wheel', e => { e.preventDefault();
+  const mouse = e.deltaMode !== 0 || (e.deltaX === 0 && Math.abs(e.deltaY) >= 50 && Number.isInteger(e.deltaY));
+  if (e.ctrlKey) rad.t = clamp(rad.t + e.deltaY*.12, R_MIN, R_MAX);
+  else if (mouse) rad.t = clamp(rad.t + e.deltaY*.02, R_MIN, R_MAX);
+  else panBy(e.deltaX, e.deltaY);
+}, { passive: false });
+stage.addEventListener('contextmenu', e => e.preventDefault());
+stage.addEventListener('dblclick', () => { az.t = HOME.az; po.t = HOME.po; rad.t = HOME.r; resetPan(); });
 
 /* ---------- controls ---------- */
 const WGT = { carica: 14, fusione: 30, colata: 14, taglio: 22 }, WSUM = 80; // on-screen width of each phase in the progress bar
@@ -524,13 +537,13 @@ function sync() {
 /* ---------- whole chain first, then a phase chosen by click ---------- */
 const OV = { az: .3, po: .95 };
 function goPhase(id) {
-  const p = PH.find(q => q.id === id); overview = false; document.body.classList.remove('ov');
+  resetPan(); const p = PH.find(q => q.id === id); overview = false; document.body.classList.remove('ov');
   t = p.from + (id === 'carica' ? 0 : .01); if (id !== 'taglio') S.car.set(0);
   playing = !reduce; auto = false; hold = 0;
   az.t = HOME.az; po.t = HOME.po; rad.t = HOME.r; sync();
 }
 function goOverview() {
-  overview = true; document.body.classList.add('ov'); // the replay keeps running, only the camera pulls back
+  resetPan(); overview = true; document.body.classList.add('ov'); // the replay keeps running, only the camera pulls back
   az.t = OV.az; po.t = OV.po; rad.t = HOME.r; sync();
 }
 const ray = new THREE.Raycaster(), ground = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hit = new THREE.Vector3();
@@ -598,6 +611,12 @@ window.__ready = true;
 .trio b { font-size: 13px; font-weight: 500; }
 .sec h3 { font-size: 13px; font-weight: 600; letter-spacing: -.005em; margin-bottom: 6px; }
 .list { display: flex; flex-direction: column; margin: 0 -8px; }
+.fold summary { list-style: none; display: flex; align-items: center; justify-content: space-between; cursor: pointer; padding: 6px 8px; margin: 0 -8px; border-radius: 10px; color: var(--ink2); transition: background 120ms; }
+.fold summary::-webkit-details-marker { display: none; }
+.fold summary:hover { background: rgba(255,255,255,.05); }
+.fold summary h3 { margin: 0; color: var(--fg); }
+.fold summary svg { transition: transform .25s cubic-bezier(.2,.8,.2,1); }
+.fold[open] summary svg { transform: rotate(180deg); }
 .list .row { display: flex; align-items: center; gap: 4px; }
 .list .row .pick { flex: 1; min-width: 0; }
 .list .rp { all: unset; flex: none; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; color: var(--ink2); background: rgba(255,255,255,.06); cursor: pointer; transition: background 120ms, color 120ms, transform 100ms; }
@@ -670,9 +689,9 @@ body.ov .ovhint { display: block; }
     <div class="bar"><div class="g" id="bG"></div></div><div class="scale"><span>−1 t</span><span>atteso</span><span>+1 t</span></div>
     <div class="trio"><div><span>Caricato</span><b class="num" id="cC"></b></div><div><span>Letto</span><b class="num" id="cL"></b></div><div><span>Atteso</span><b class="num" id="cA"></b></div></div>
   </div>
-  <div class="sec"><h3>Ultime colate</h3><div class="list" id="list"></div></div>
   <div class="sec"><h3>MAM per colata</h3><svg class="spark" id="spark" viewBox="0 0 300 64" preserveAspectRatio="none"></svg>
     <div class="leg"><span style="--c:rgba(235,235,245,.45)">ufficiale</span><span style="--c:var(--green)">corretta</span></div></div>
+  <details class="sec fold"><summary><h3>Ultime colate</h3><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg></summary><div class="list" id="list"></div></details>
 </aside>
 
 <button class="back mat" type="button" id="back" aria-label="Tutta la catena" title="Tutta la catena"><svg class="ex" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4"/></svg><svg class="co" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2v4H2M14 6h-4V2M10 14v-4h4M2 10h4v4"/></svg></button>
