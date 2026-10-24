@@ -506,7 +506,7 @@ function goPhase(id) {
   az.t = HOME.az; po.t = HOME.po; rad.t = HOME.r; sync();
 }
 function goOverview() {
-  overview = true; document.body.classList.add('ov'); playing = false; auto = false; t = 0; S.car.set(0);
+  overview = true; document.body.classList.add('ov'); // the replay keeps running, only the camera pulls back
   az.t = OV.az; po.t = OV.po; rad.t = HOME.r; sync();
 }
 const ray = new THREE.Raycaster(), ground = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hit = new THREE.Vector3();
@@ -595,7 +595,7 @@ window.__ready = true;
 body.ov .st { display: inline-flex; }
 .ovhint { position: fixed; left: calc(var(--ip) + (100% - var(--ip)) / 2); transform: translateX(-50%); top: max(20px, env(safe-area-inset-top, 0px)); padding: 9px 16px; border-radius: 99px; font-size: 13px; color: var(--ink2); display: none; pointer-events: none; }
 body.ov .ovhint { display: block; }
-.back { all: unset; position: fixed; left: calc(var(--ip) + (100% - var(--ip)) / 2); transform: translateX(-50%); top: max(16px, env(safe-area-inset-top, 0px)); padding: 9px 16px; border-radius: 99px; font: 500 13px/1 inherit; font-family: inherit; color: var(--fg); cursor: pointer; transition: transform 100ms ease-out; }
+.back { all: unset; display: inline-flex; align-items: center; gap: 8px; position: fixed; left: calc(var(--ip) + (100% - var(--ip)) / 2); transform: translateX(-50%); top: max(16px, env(safe-area-inset-top, 0px)); padding: 9px 16px; border-radius: 99px; font: 500 13px/1 inherit; font-family: inherit; color: var(--fg); cursor: pointer; transition: transform 100ms ease-out; }
 .back:active { transform: translateX(-50%) scale(.96); }
 .back:focus-visible { outline: 1px solid var(--accent); outline-offset: 3px; }
 body.ov .back, body.ov .hint { display: none; }
@@ -642,7 +642,7 @@ body.ov .back, body.ov .hint { display: none; }
 </aside>
 
 <div class="ovhint mat">Tutta la catena · clicca una fase per entrare</div>
-<button class="back mat" type="button" id="back">← Tutta la catena</button>
+<button class="back mat" type="button" id="back" aria-label="Tutta la catena"><svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4"/></svg>Tutta la catena</button>
 <button class="st mat" type="button" data-id="carica" style="--c:#aab3c2"><i></i>Carica</button>
 <button class="st mat" type="button" data-id="fusione" style="--c:#f59a3a"><i></i>Fusione</button>
 <button class="st mat" type="button" data-id="colata" style="--c:#ff5b2e"><i></i>Colata</button>
@@ -701,7 +701,7 @@ function spark() {
 
 function render() {
   const d = C[cur];
-  $('cId').textContent = 'Colata ' + d.id; $('cSub').textContent = `C45 · ${d.t} · dati simulati`;
+  $('cId').textContent = 'Colata ' + d.id; $('cSub').textContent = `C45 · ${d.t}`;
   $('list').innerHTML = C.slice(-5).reverse().map(x => { const i = C.indexOf(x), g = x.l - x.a;
     return `<button type="button" data-i="${i}" aria-current="${i === cur}" style="--c:${ST[x.s][1]}"><i></i><span>${x.id}<small>${ST[x.s][0]}</small></span><span class="gap num ${x.s !== 'ok' ? 'hot' : ''}">${minus(g)} kg</span></button>`; }).join('');
   spark(); lastDone = null;
@@ -748,13 +748,13 @@ $('back').addEventListener('click', () => window.__twin.goOverview());
     // yard scale: the bucket sits on it in the first ~1.6 min of carica
     const yard = clamp01((t - .35)/1.2);
     live(t, yard, T.lf);
-    show($('t1'), !T.overview && t > .35); $('t1v').textContent = kg(Math.round(d.c*yard/10)*10);
+    show($('t1'), t > .35); $('t1v').textContent = kg(Math.round(d.c*yard/10)*10);
     // tapping scale: reads the ladle as it fills, then the final reading with the expected value
     const tap = t >= 47.2, fill = t < 55 ? T.lf : 1;
-    show($('t2'), !T.overview && tap);
+    show($('t2'), tap);
     $('t2v').textContent = fill > .99 ? `${n(d.l)} letti · ${n(d.a)} attesi` : kg(Math.round(d.l*fill/10)*10);
     // bar scale at the end of the caster
-    show($('t3'), !T.overview && T.weighed > .02);
+    show($('t3'), T.weighed > .02);
     $('t3v').textContent = kg(Math.round(d.l*.975*T.weighed/10)*10);
     pj(-11.5, 4.2, 0, $('t1')); pj(7.7, 5.2, 0, $('t2')); pj(39.5, 3.6, 0, $('t3'));
     if (T.overview) document.querySelectorAll('.st').forEach(b => pj(...SPOT[b.dataset.id], b));
