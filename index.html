@@ -453,29 +453,32 @@ stage.addEventListener('wheel', e => { e.preventDefault(); rad.t = clamp(rad.t +
 stage.addEventListener('dblclick', () => { az.t = HOME.az; po.t = HOME.po; rad.t = HOME.r; });
 
 /* ---------- controls ---------- */
+const WGT = { carica: 14, fusione: 30, colata: 14, taglio: 22 }, WSUM = 80; // on-screen width of each phase in the progress bar
+const posOf = t => { let a = 0; for (const p of PH) { if (t < p.to) return (a + WGT[p.id]*clamp((t - p.from)/(p.to - p.from)))/WSUM; a += WGT[p.id]; } return 1; };
+const tOf = x => { let a = 0; x *= WSUM; for (const p of PH) { if (x < a + WGT[p.id]) return p.from + (p.to - p.from)*(x - a)/WGT[p.id]; a += WGT[p.id]; } return END; };
 const PC = { carica: '#aab3c2', fusione: '#f59a3a', colata: '#ff5b2e', taglio: '#5fc9a6' };
 const ICON = { play: '<svg viewBox="0 0 16 16"><path d="M4 2.5v11l9.5-5.5z"/></svg>', pause: '<svg viewBox="0 0 16 16"><rect x="3.5" y="2.5" width="3" height="11" rx="1"/><rect x="9.5" y="2.5" width="3" height="11" rx="1"/></svg>', again: '<svg viewBox="0 0 16 16"><path d="M8 2.5a5.5 5.5 0 1 0 5.4 6.5h-1.6A4 4 0 1 1 8 4v2.2l3.2-3-3.2-3z"/></svg>' };
 const tabs = document.getElementById('tabs'), segs = document.getElementById('segs'), head = document.getElementById('head'), strip = document.getElementById('strip'), playBtn = document.getElementById('play');
 PH.forEach(p => {
-  const b = document.createElement('button'); b.className = 'tab'; b.type = 'button'; b.setAttribute('role', 'tab'); b.dataset.id = p.id; b.textContent = p.label; b.style.flex = `${p.to - p.from} 0 0`; b.style.setProperty('--pc', PC[p.id]);
+  const b = document.createElement('button'); b.className = 'tab'; b.type = 'button'; b.setAttribute('role', 'tab'); b.dataset.id = p.id; b.textContent = p.label; b.style.flex = `${WGT[p.id]} 0 0`; b.style.setProperty('--pc', PC[p.id]);
   b.addEventListener('click', () => { t = p.from + (p.id === 'carica' ? 0 : .01); auto = false; hold = 0; sync(); }); tabs.appendChild(b);
-  const s = document.createElement('div'); s.className = 'seg'; s.style.flex = `${p.to - p.from} 0 0`; s.dataset.id = p.id; s.style.setProperty('--pc', PC[p.id]); s.innerHTML = '<div class="fill"></div>'; segs.appendChild(s);
+  const s = document.createElement('div'); s.className = 'seg'; s.style.flex = `${WGT[p.id]} 0 0`; s.dataset.id = p.id; s.style.setProperty('--pc', PC[p.id]); s.innerHTML = '<div class="fill"></div>'; segs.appendChild(s);
 });
 playBtn.addEventListener('click', () => { playing = !playing; if (playing && t >= END) { t = 0; S.car.set(0); } auto = false; sync(); });
-function scrub(e) { const r = strip.getBoundingClientRect(); t = clamp((e.clientX - r.left)/r.width)*END; playing = false; auto = false; sync(); }
+function scrub(e) { const r = strip.getBoundingClientRect(); t = tOf(clamp((e.clientX - r.left)/r.width)); playing = false; auto = false; sync(); }
 strip.addEventListener('pointerdown', e => { strip.setPointerCapture(e.pointerId); strip.classList.add('drag'); scrub(e); strip.onpointermove = scrub; }); const endDrag = () => { strip.onpointermove = null; strip.classList.remove('drag'); }; strip.addEventListener('pointerup', endDrag); strip.addEventListener('pointercancel', endDrag);
 strip.addEventListener('keydown', e => { const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0; if (d) { t = clamp(t + d, 0, END); playing = false; auto = false; sync(); e.preventDefault(); } });
 function sync() {
   const m = model(t);
   [...tabs.children].forEach(b => b.setAttribute('aria-selected', b.dataset.id === m.phase.id));
   [...segs.children].forEach((s, i) => { const p = PH[i]; s.firstChild.style.width = clamp((t - p.from)/(p.to - p.from))*100 + '%'; });
-  head.style.left = (t/END*100) + '%'; strip.setAttribute('aria-valuenow', Math.round(t)); strip.setAttribute('aria-valuetext', m.phase.label);
+  head.style.left = (posOf(t)*100) + '%'; strip.setAttribute('aria-valuenow', Math.round(t)); strip.setAttribute('aria-valuetext', m.phase.label);
   const st = playing ? 'pause' : (t >= END ? 'again' : 'play'); if (playBtn.dataset.st !== st) { playBtn.dataset.st = st; playBtn.innerHTML = ICON[st]; playBtn.setAttribute('aria-label', { pause: 'Pausa', again: 'Ripeti', play: 'Riproduci' }[st]); } applyTargets();
 }
 if (reduce) document.getElementById('hint').textContent = 'Animazioni ridotte: usa la barra in basso.';
 let last = performance.now(); sync();
 [S.roof, S.roofLift, S.tilt, ...S.eY, S.bx, S.by, S.br, S.car, S.cx, S.cr].forEach(k => k.set(k.t));
-const SPEED = { carica: .8, fusione: 5, colata: 1.6, taglio: 2.3 }; // replay minutes per second, per phase
+const SPEED = { carica: .7, fusione: 4.5, colata: 1.15, taglio: 1.25 }; // replay minutes per second, per phase
 function loop(now) {
   const dt = clamp((now - last)/1000, 0, .05); last = now;
   if (playing) { t += dt*SPEED[model(t).phase.id]; if (t >= END) { t = END; if (auto) { hold += dt; if (hold > 3.6) { t = 0; hold = 0; } } else playing = false; } sync(); }
