@@ -767,12 +767,12 @@ render();
 
 function offset() { const c = window.__cam; if (!c) return; const w = innerWidth, h = innerHeight, k = w > 860 ? ($('stage').querySelector('canvas') && document.querySelector('.insp').offsetWidth + 32)/2 : 0; c.clearViewOffset(); }
 addEventListener('resize', offset); offset();
-let R = null, IR = 0; // layout read once per frame, so label writes don't force a reflow each
+let R = null, IR = 0, maxW = 0; // layout read once per frame, so label writes don't force a reflow each
 const pj = (x, y, z, el) => { const r = R, v = new THREE.Vector3(x, y, z).project(window.__cam);
   el.style.left = (r.left + (v.x + 1) / 2 * r.width) + 'px'; el.style.visibility = el.classList.contains('tag') && (r.left + (v.x + 1) / 2 * r.width) < IR + 70 ? 'hidden' : ''; el.style.top = (r.top + (1 - v.y) / 2 * r.height) + 'px'; };
 // a scale's reading appears when that scale is in use, then stays until the replay starts over
 const show = (el, on) => { el.style.setProperty('--o', on ? 1 : 0); el.style.setProperty('--k', on ? 1 : .9); };
-const SPOT = { carica: [-11.5, 8, 0], fusione: [0, 11, 0], colata: [7.7, 8, 0], taglio: [36, 9, 0] };
+const SPOT = { carica: [-11.5, .2, 3.6], fusione: [0, .2, 5], colata: [7.7, .2, 3.8], taglio: [34, .2, 3.4] }; // pills sit on the floor in front of each station, under the scale readings
 document.querySelectorAll('.st').forEach(b => b.addEventListener('click', () => window.__twin.goPhase(b.dataset.id)));
 $('back').addEventListener('click', () => { const T = window.__twin; if (T.overview) { T.leaveOverview(); $('back').title = 'Tutta la catena'; } else { T.goOverview(); $('back').title = 'Torna alla fase'; } });
 (function tick() {
@@ -793,8 +793,10 @@ $('back').addEventListener('click', () => { const T = window.__twin; if (T.overv
     show($('t2'), tap);
     $('t2v').textContent = fill > .99 ? `${n(d.l)} letti · ${n(d.a)} attesi` : stuck ? `${n(d.l)} kg · lettura ferma` : kg(Math.round(d.a*fill/10)*10);
     // bar scale at the end of the caster
-    show($('t3'), T.weighed > .02);
-    $('t3v').textContent = kg(Math.round(d.l*.975*T.weighed/10)*10);
+    // the bar scale keeps its total after the crane has taken the bars away
+    if (t < 55) maxW = 0; maxW = t >= 72.5 ? 1 : Math.max(maxW, T.weighed);
+    show($('t3'), maxW > .02);
+    $('t3v').textContent = kg(Math.round(d.l*.975*maxW/10)*10);
     pj(-11.5, 4.2, 0, $('t1')); pj(7.7, 5.2, 0, $('t2')); pj(39.5, 3.6, 0, $('t3'));
     if (T.overview) document.querySelectorAll('.st').forEach(b => pj(...SPOT[b.dataset.id], b));
   }
