@@ -24,8 +24,7 @@ canvas { display: block; width: 100%; height: 100%; }
 .tab { position: relative; background: none; border: 0; padding: 0 0 8px; text-align: left; color: var(--muted); font: 500 12px/1.2 inherit; font-family: inherit; letter-spacing: .01em; cursor: pointer; white-space: nowrap; overflow: visible; min-width: 0; transition: color 150ms; }
 .tab:hover { color: var(--fg); }
 .tab[aria-selected="true"] { color: var(--pc); }
-.tab::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: currentColor; margin-right: 6px; vertical-align: 1px; opacity: .55; }
-.tab[aria-selected="true"]::before { opacity: 1; box-shadow: 0 0 8px var(--pc); }
+.tab[aria-selected="true"]::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: currentColor; margin-right: 6px; vertical-align: 1px; box-shadow: 0 0 8px var(--pc); }
 .strip { position: relative; height: 16px; cursor: ew-resize; touch-action: none; }
 .strip .segs { position: absolute; left: 0; right: 0; top: 5px; height: 6px; display: flex; gap: 4px; }
 .strip .seg { position: relative; background: rgba(255,255,255,.08); border-radius: 3px; overflow: hidden; }
@@ -47,7 +46,7 @@ button:focus-visible, .strip:focus-visible { outline: 1px solid var(--accent); o
   <button class="btn" id="play" type="button" aria-label="Pausa"></button>
   <div class="track">
     <div class="tabs" role="tablist" aria-label="Fase" id="tabs"></div>
-    <div class="strip" id="strip" role="slider" tabindex="0" aria-label="Avanzamento della colata" aria-valuemin="0" aria-valuemax="55" aria-valuenow="0"><div class="segs" id="segs"></div><div class="head" id="head"></div></div>
+    <div class="strip" id="strip" role="slider" tabindex="0" aria-label="Avanzamento della colata" aria-valuemin="0" aria-valuemax="75" aria-valuenow="0"><div class="segs" id="segs"></div><div class="head" id="head"></div></div>
   </div>
 </div>
 
@@ -73,8 +72,8 @@ class Spring {
   set(x) { this.x = this.t = x; this.v = 0; }
 }
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-const PH = [ {id:'carica',label:'Carica',from:0,to:7}, {id:'fusione',label:'Fusione',from:7,to:47}, {id:'colata',label:'Colata',from:47,to:55} ];
-const END = 55;
+const PH = [ {id:'carica',label:'Carica',from:0,to:7}, {id:'fusione',label:'Fusione',from:7,to:47}, {id:'colata',label:'Colata',from:47,to:55}, {id:'taglio',label:'Taglio',from:55,to:75} ];
+const END = 75;
 function model(t) {
   const phase = PH.find(p => t < p.to) || PH.at(-1);
   const charged = phase.id === 'carica' ? ease(clamp(t/6.2)) : 1;
@@ -139,11 +138,11 @@ const glow2 = new THREE.PointLight(0xff8a30, 0, 10, 2); glow2.position.set(7.7, 
 /* ---------- floor and hall ---------- */
 const floor = new THREE.Mesh(new THREE.PlaneGeometry(160, 160), mConc); floor.rotation.x = -Math.PI/2; floor.receiveShadow = true; scene.add(floor);
 const ring = new THREE.Mesh(new THREE.RingGeometry(7.6, 7.78, 96), mYellow); ring.rotation.x = -Math.PI/2; ring.position.y = .012; scene.add(ring);
-for (const z of [-1.15, 1.15]) add(scene, new THREE.BoxGeometry(14, .12, .22), STD(0x55585e, .4, .9), 10.5, .06, z);
-for (let x = -36; x <= 36; x += 12) { add(scene, new THREE.BoxGeometry(1, 30, 1), mDark, x, 15, -24); add(scene, new THREE.BoxGeometry(.3, 30, 1.6), mDark, x, 15, -24); }
-add(scene, new THREE.BoxGeometry(90, 1.6, 1.2), mDark, 0, 21, -24);
+for (const z of [-1.15, 1.15]) add(scene, new THREE.BoxGeometry(20, .12, .22), STD(0x55585e, .4, .9), 13.5, .06, z);
+for (let x = -36; x <= 72; x += 12) { add(scene, new THREE.BoxGeometry(1, 30, 1), mDark, x, 15, -24); add(scene, new THREE.BoxGeometry(.3, 30, 1.6), mDark, x, 15, -24); }
+add(scene, new THREE.BoxGeometry(160, 1.6, 1.2), mDark, 18, 21, -24);
 const crane = new THREE.Group(); crane.position.y = 21.5; scene.add(crane);
-add(crane, new THREE.BoxGeometry(80, 1.1, 1.1), STD(0x3a3d44, .5, .8), 0, 0, 0);
+add(crane, new THREE.BoxGeometry(130, 1.1, 1.1), STD(0x3a3d44, .5, .8), 18, 0, 0);
 const trolley = add(crane, new THREE.BoxGeometry(2.6, 1, 2), STD(0x6a5a2a, .6, .6), 0, -1, 0);
 
 /* ---------- furnace ---------- */
@@ -231,10 +230,11 @@ for (let i = 0; i < 26; i++) { const a = rnd()*6.28, r = rnd()*1.0; add(bucket, 
 const chain = new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints([[1.2, .8, 0], [0, 2.7, 0], [-1.2, .8, 0], [0, 2.7, 0], [0, .8, 1.2], [0, 2.7, 0], [0, .8, -1.2], [0, 2.7, 0]].map(p => new THREE.Vector3(...p))), new THREE.LineBasicMaterial({ color: 0x8a8d94 })); chain.position.y = -2.7; hook.add(chain);
 
 /* ladle on its car */
+const carG = new THREE.Group(); carG.position.set(7.7, 0, 0); scene.add(carG);
 const ladleG = new THREE.Group(); ladleG.position.set(7.7, 0, 0); scene.add(ladleG);
-add(ladleG, new THREE.BoxGeometry(4.4, .7, 3.6), STD(0x2b2824, .75, .5), 0, .75, 0);
+add(carG, new THREE.BoxGeometry(4.4, .7, 3.6), STD(0x2b2824, .75, .5), 0, .75, 0);
 const wheels = [];
-for (const [x, z] of [[-1.6, -1.15], [1.6, -1.15], [-1.6, 1.15], [1.6, 1.15]]) { const w = add(ladleG, new THREE.CylinderGeometry(.42, .42, .3, 24), mDark, x, .42, z); w.rotation.x = Math.PI/2; wheels.push(w); }
+for (const [x, z] of [[-1.6, -1.15], [1.6, -1.15], [-1.6, 1.15], [1.6, 1.15]]) { const w = add(carG, new THREE.CylinderGeometry(.42, .42, .3, 24), mDark, x, .42, z); w.rotation.x = Math.PI/2; wheels.push(w); }
 add(ladleG, new THREE.CylinderGeometry(1.6, 1.3, 1.75, 40, 1, true), STD(0x464a52, .5, .75, { map: steel, side: THREE.DoubleSide }), 0, 1.97, 0);
 add(ladleG, new THREE.CylinderGeometry(1.45, 1.2, 1.7, 40, 1, true), mBrick, 0, 1.97, 0);
 add(ladleG, new THREE.CylinderGeometry(1.25, 1.25, .1, 40), STD(0x1a1512, .9, 0), 0, 1.2, 0);
@@ -268,6 +268,58 @@ const fillMat = bathMat.clone(); fillMat.uniforms = { time: bathMat.uniforms.tim
 const ladleFill = new THREE.Mesh(new THREE.CircleGeometry(1.3, 48), fillMat); ladleFill.rotation.x = -Math.PI/2; ladleG.add(ladleFill);
 const stream = new THREE.Mesh(new THREE.CylinderGeometry(.16, .12, 1, 14), new THREE.MeshBasicMaterial({ color: new THREE.Color(2.6, .8, .14) })); scene.add(stream);
 
+/* ---------- continuous caster, shear and bar scale (after tapping) ---------- */
+const CX = 25, CR = 4, CY = 1.45, MOLD_Y = 10.5, ARC_Y = CY + CR, HX = CX + CR, SHEAR_X = HX + 3.5, SCALE_X = SHEAR_X + 7, RACK_X = SCALE_X + 7.5;
+const STRAND_R = .24, BIL_LEN = 3.2, HOT = new THREE.Color(2.6, .8, .12), COLD = new THREE.Color(.5, .2, .1);
+const mTower = STD(0x2a2d33, .8, .5, { envMapIntensity: .25 }), mCopper = STD(0xb06a3b, .45, .85);
+const caster = new THREE.Group(); scene.add(caster);
+for (const [x, z] of [[-1.8, -1.8], [1.8, -1.8], [-1.8, 1.8], [1.8, 1.8]]) add(caster, new THREE.BoxGeometry(.5, 11.4, .5), mTower, CX + x, 5.7, z);
+for (const y of [4, 8, 11.4]) { add(caster, new THREE.BoxGeometry(4.2, .3, .3), mTower, CX, y, -1.8); add(caster, new THREE.BoxGeometry(4.2, .3, .3), mTower, CX, y, 1.8); add(caster, new THREE.BoxGeometry(.3, .3, 4.2), mTower, CX - 1.8, y, 0); add(caster, new THREE.BoxGeometry(.3, .3, 4.2), mTower, CX + 1.8, y, 0); }
+add(caster, new THREE.BoxGeometry(3.0, .8, 2.2), STD(0x3a3e45, .7, .4, { map: steel }), CX, 12.3, 0);        // tundish
+add(caster, new THREE.BoxGeometry(.9, 1.4, .9), mCopper, CX, MOLD_Y + .7, 0);                                  // copper mold
+const mStrand = new THREE.MeshBasicMaterial({ color: HOT });
+const strandV = new THREE.Mesh(new THREE.CylinderGeometry(STRAND_R, STRAND_R, 1, 12), mStrand); caster.add(strandV);
+const strandH = new THREE.Mesh(new THREE.CylinderGeometry(STRAND_R, STRAND_R, 1, 12), mStrand); strandH.rotation.z = Math.PI/2; caster.add(strandH);
+const strandStub = new THREE.Mesh(new THREE.CylinderGeometry(STRAND_R, STRAND_R, 1, 12), mStrand); strandStub.rotation.z = Math.PI/2; caster.add(strandStub);
+const ARC_N = 14, arcSeg = [];
+for (let i = 0; i < ARC_N; i++) {
+  const a0 = Math.PI + i*(Math.PI/2)/ARC_N, a1 = Math.PI + (i + 1)*(Math.PI/2)/ARC_N, am = (a0 + a1)/2;
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(STRAND_R, STRAND_R, 2*CR*Math.sin((a1 - a0)/2) + .02, 12), mStrand);
+  m.position.set(CX + CR + CR*Math.cos(am), CY + CR + CR*Math.sin(am), 0); m.rotation.z = am + Math.PI/2 + Math.PI; caster.add(m); arcSeg.push(m);
+}
+const streamTun = new THREE.Mesh(new THREE.CylinderGeometry(.1, .1, 1, 10), new THREE.MeshBasicMaterial({ color: new THREE.Color(2.6, .8, .14) })); caster.add(streamTun);
+// roller table
+for (let x = HX - 1; x <= RACK_X + 1; x += 1.3) { const r = add(caster, new THREE.CylinderGeometry(.16, .16, 1.6, 12), mPipe, x, CY - .45, 0); r.rotation.x = Math.PI/2; }
+for (const z of [-.95, .95]) add(caster, new THREE.BoxGeometry(RACK_X - HX + 3, .22, .22), mTower, (HX + RACK_X)/2, CY - .72, z);
+// shear: portal + dropping blade
+for (const z of [-1.2, 1.2]) add(caster, new THREE.BoxGeometry(.5, 3.2, .5), mTower, SHEAR_X, 1.6, z);
+add(caster, new THREE.BoxGeometry(.7, .5, 3.1), mTower, SHEAR_X, 3.4, 0);
+const blade = add(caster, new THREE.BoxGeometry(.18, 1.2, 1.8), STD(0xb7bcc3, .35, .9), SHEAR_X, 2.8, 0);
+// bar scale on the table
+const barScale = new THREE.Group(); barScale.position.set(SCALE_X, 0, 0); caster.add(barScale);
+add(barScale, new THREE.BoxGeometry(5.4, .1, 3.0), STD(0x3b3e44, .45, .85, { map: steel }), 0, .05, 0);
+for (const [x, z] of [[-2.5, -1.3], [2.5, -1.3], [-2.5, 1.3], [2.5, 1.3]]) add(barScale, new THREE.CylinderGeometry(.14, .18, .1, 16), mClamp, x, .12, z);
+const bsHatch = new THREE.Mesh(new THREE.PlaneGeometry(5.8, 3.4), STD(0xc9a21e, .7, .1)); bsHatch.rotation.x = -Math.PI/2; bsHatch.position.y = .006; barScale.add(bsHatch);
+add(barScale, new THREE.BoxGeometry(.18, 3.0, .18), mDark, -2.6, 1.5, -2.0);
+const bdisp = new THREE.Group(); bdisp.position.set(-2.6, 3.2, -2.0); bdisp.rotation.y = -.6; bdisp.scale.setScalar(2); barScale.add(bdisp);
+add(bdisp, new THREE.BoxGeometry(.9, .6, .2), STD(0x15171a, .4, .5), 0, 0, 0);
+add(bdisp, new THREE.PlaneGeometry(.74, .42), new THREE.MeshBasicMaterial({ color: 0x0a1410 }), 0, 0, .105).castShadow = false;
+const bBar = add(bdisp, new THREE.PlaneGeometry(.66, .3), new THREE.MeshBasicMaterial({ color: new THREE.Color(.3, 1.1, .5) }), 0, 0, .11); bBar.castShadow = false;
+// rack where the cut bars end up
+for (const z of [-1.2, 1.2]) add(caster, new THREE.BoxGeometry(.3, .9, .3), mTower, RACK_X + 1.5, .45, z);
+add(caster, new THREE.BoxGeometry(.3, .3, 3), mTower, RACK_X + 1.5, .95, 0);
+// cut bars
+const NB = 4, TCUT = [.70, .77, .84, .91], bars = [];
+for (let k = 0; k < NB; k++) { const m = new THREE.Mesh(new THREE.CylinderGeometry(STRAND_R, STRAND_R, BIL_LEN, 12), new THREE.MeshBasicMaterial({ color: HOT.clone() })); m.rotation.z = Math.PI/2; m.visible = false; caster.add(m); bars.push(m); }
+// second hook: lifts the ladle from the car to the caster
+const hook2 = new THREE.Group(); scene.add(hook2);
+add(hook2, new THREE.CylinderGeometry(.05, .05, 22, 8), STD(0x15151a, .5, .8), 0, 11.5, 0);
+add(hook2, new THREE.BoxGeometry(.9, .6, .6), STD(0x6a5a2a, .5, .6), 0, 0, 0);
+const chain2 = new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints([[0, 0, 0], [0, -3.2, 2], [0, 0, 0], [0, -3.2, -2]].map(p => new THREE.Vector3(...p))), new THREE.LineBasicMaterial({ color: 0x8a8d94 })); hook2.add(chain2);
+hook2.visible = false;
+const trolley2 = add(crane, new THREE.BoxGeometry(2.6, 1, 2), STD(0x6a5a2a, .6, .6), 0, -1, 0); trolley2.visible = false;
+caster.visible = true;
+
 /* ---------- particles ---------- */
 const NS = 260, sp = new Float32Array(NS*3), sv = new Float32Array(NS*3), sl = new Float32Array(NS);
 for (let i = 0; i < NS; i++) sp[i*3 + 1] = -100;
@@ -281,7 +333,7 @@ function emitSmoke(x, y, z, big) { for (const s of smoke) if (s.userData.life <=
 /* ---------- state ---------- */
 const FROZEN = window.__static != null;
 let t = FROZEN ? window.__static : 0, playing = !reduce && !FROZEN, auto = playing, hold = 0;
-const S = { roof: new Spring(1.7, .55, 1), roofLift: new Spring(1, .55, 1), tilt: new Spring(0, .55, 1), eY: [0, 1, 2].map(() => new Spring(14, .6, 1)), bx: new Spring(-17, .65, 1), by: new Spring(17, .65, 1), br: new Spring(0, .5, .85), car: new Spring(0, 1.1, 1) };
+const S = { roof: new Spring(1.7, .55, 1), roofLift: new Spring(1, .55, 1), tilt: new Spring(0, .55, 1), eY: [0, 1, 2].map(() => new Spring(14, .6, 1)), bx: new Spring(-17, .65, 1), by: new Spring(17, .65, 1), br: new Spring(0, .5, .85), car: new Spring(0, 1.1, 1), cx: new Spring(1.6, .9, 1), cr: new Spring(0, .9, 1) };
 if (FROZEN) {}
 const worldTip = new THREE.Vector3(), vB = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0);
 let M = model(t);
@@ -309,17 +361,41 @@ function frame(dt) {
   hook.position.set(S.bx.step(dt), S.by.step(dt), 0); bucket.rotation.z = -S.br.step(dt); trolley.position.x = hook.position.x; trolley.position.y = -1;
   // levels
   const lvl = M.phase.id === 'colata' ? 1.75 + 2.0*(1 - M.c) : 1.75 + 2.0*(M.charged*M.m);
-  bath.position.y = lvl; bath.visible = (M.phase.id === 'colata' ? M.c < .97 : M.charged*M.m > .015);
+  bath.position.y = lvl; bath.visible = M.phase.id === 'taglio' ? false : (M.phase.id === 'colata' ? M.c < .97 : M.charged*M.m > .015);
   bathMat.uniforms.heat.value = M.heat;
   const scrapLvl = M.charged*(1 - M.m);
   scrap.forEach(p => p.visible = p.userData.thr < scrapLvl && M.phase.id !== 'colata');
-  const lf = M.phase.id === 'colata' ? M.c : (t >= 55 ? 1 : 0);
+  const tau = clamp((t - 55)/20), cs = x => x*x*(3 - 2*x);
+  const lf = M.phase.id === 'colata' ? M.c : (t < 55 ? 0 : tau < .42 ? 1 : 1 - clamp((tau - .42)/.40));
   ladleFill.position.y = 1.3 + 1.2*lf; ladleFill.visible = lf > .02;
-  carT = t >= 54.85 ? carT + dt : 0; const k = clamp(carT/3.2), carX = 9.5*(k < .5 ? 4*k*k*k : 1 - Math.pow(-2*k + 2, 3)/2); ladleG.position.x = 7.7 + carX; glow2.position.x = ladleG.position.x; wheels.forEach(w => w.rotation.y = -carX/.42);
-  const w = Math.max(.001, lf*clamp(1 - carX/2.5)); scaleBar.scale.x = w; scaleBar.position.x = -.33*(1 - w);
+  // car drives right on the rails, the second crane lifts the ladle to the caster turret
+  const carX = 9.5*cs(clamp(tau/.1)); carG.position.x = 7.7 + carX; wheels.forEach(w => w.rotation.y = -carX/.42);
+  const lifted = cs(clamp((tau - .15)/.13)), travel = cs(clamp((tau - .28)/.14)), down = cs(clamp((tau - .05)/.10));
+  const onHook = t >= 55 && tau >= .15, lx = 17.2 + (CX - 17.2)*travel, ly = 11.6*lifted;
+  const sink = t < 55 ? -.035*lf : 0;
+  ladleG.position.set(onHook ? lx : carG.position.x, onHook ? ly : sink, 0); carG.position.y = sink;
+  hook2.visible = trolley2.visible = t >= 55; hook2.position.set(onHook ? lx : 17.2, onHook ? ly + 5.5 : 17 - 11.5*down, 0); trolley2.position.x = hook2.position.x;
+  const w = Math.max(.001, t < 55 ? lf : 0); scaleBar.scale.x = w; scaleBar.position.x = -.33*(1 - w);
   scaleTick.position.x = -.33 + .66*w; scaleTick.visible = w > .02 && w < .99;
-  
-  ladleG.position.y = -.035*lf*clamp(1 - carX);
+  // casting: strand grows from the mold along the curved path, shear cuts bars that ride to the scale
+  const V = MOLD_Y - ARC_Y, AL = Math.PI/2*CR, H = SHEAR_X - HX, head = (V + AL + H)*clamp((tau - .46)/.17);
+  const vL = Math.min(head, V); strandV.visible = vL > .01; strandV.position.set(CX, MOLD_Y - vL/2, 0); strandV.scale.y = Math.max(.001, vL);
+  arcSeg.forEach((m, i) => m.visible = head >= V + (i + .5)*AL/ARC_N);
+  const hL = clamp(head - V - AL, 0, H); strandH.visible = hL > .01; strandH.position.set(HX + hL/2, CY, 0); strandH.scale.y = Math.max(.001, hL);
+  const kk = Math.floor((tau - .63)/.07), ph = (tau - .63 - kk*.07)/.07, stub = tau >= .63 && tau < .91 ? ph*BIL_LEN : 0;
+  strandStub.visible = stub > .02; strandStub.position.set(SHEAR_X + stub/2, CY, 0); strandStub.scale.y = Math.max(.001, stub);
+  streamTun.visible = tau >= .42 && tau < .82; streamTun.position.set(CX, 12.6, 0); streamTun.scale.set(1, .5, 1);
+  let dip = 0, weighed = 0;
+  bars.forEach((m, k) => {
+    const u = clamp((tau - TCUT[k])/.14); m.visible = tau >= TCUT[k];
+    const x0 = SHEAR_X + BIL_LEN/2 + .1, x = x0 + (RACK_X - x0)*cs(u);
+    m.position.set(x, CY, (k - 1.5)*.6*cs(clamp((u - .6)/.4))); m.material.color.lerpColors(HOT, COLD, clamp((tau - TCUT[k])/.25));
+    dip = Math.max(dip, 1 - Math.abs(tau - TCUT[k])/.012); weighed += m.visible ? clamp((x - (SCALE_X - 1.5))/3) : 0;
+  });
+  blade.position.y = 2.8 - 1.1*Math.max(0, dip);
+  const bw = Math.max(.001, weighed/NB); bBar.scale.x = bw; bBar.position.x = -.33*(1 - bw);
+  // camera follows the ladle to the caster
+  S.cx.t = M.phase.id === 'taglio' ? 29 : 1.6; S.cr.t = M.phase.id === 'taglio' ? 27 : 0;
   const onYard = Math.abs(hook.position.x - YARD_X) < .3 && hook.position.y < 4.1 ? 1 : 0;
   yardW = clamp(yardW + (onYard - yardW)*clamp(dt*3)); const yw = Math.max(.001, yardW); yardBar.scale.x = yw; yardBar.position.x = -.33*(1 - yw); yardG.position.y = -.03*yardW; // platform settles slightly under load
   // glow lights
@@ -327,6 +403,7 @@ function frame(dt) {
   const inBath = bath.visible ? M.heat : 0;
   glow.intensity = (inBath*16 + (M.phase.id === 'fusione' ? 8*(1 - M.m*.4) : 0))*fl; glow.position.y = lvl + 1.3;
   glow2.intensity = lf > .02 ? 9*fl*clamp(lf*4) : 0;
+  glow2.position.set(ladleG.position.x, ladleG.position.y + 3, 0);
   gap.material.opacity = M.phase.id === 'fusione' ? clamp(.55*fl + M.m*.2) : 0;
   // arcs
   const melting = M.phase.id === 'fusione';
@@ -344,15 +421,15 @@ function frame(dt) {
   smokeAcc += dt*rate; while (smokeAcc > 1) { smokeAcc--; const a = rnd()*6.28; emitSmoke(Math.cos(a)*3.1, 5.2, Math.sin(a)*3.1, M.phase.id === 'carica'); }
   for (const s of smoke) { const u = s.userData; if (u.life <= 0) { s.material.opacity = 0; continue; } u.life -= dt; const k = 1 - u.life/u.max; s.position.addScaledVector(u.v, dt); s.scale.setScalar(u.s0 + k*5.5); s.material.opacity = Math.sin(Math.PI*clamp(k))*.2; }
   // camera
-  const r = rad.step(dt), a = az.x, p = po.x;
-  camera.position.set(1.6 + r*Math.sin(p)*Math.sin(a), 3.6 + r*Math.cos(p), r*Math.sin(p)*Math.cos(a)); camera.lookAt(1.6, 3.6, 0);
+  const r = rad.step(dt) + S.cr.step(dt), cxv = S.cx.step(dt), a = az.x, p = po.x;
+  camera.position.set(cxv + r*Math.sin(p)*Math.sin(a), 3.6 + r*Math.cos(p), r*Math.sin(p)*Math.cos(a)); camera.lookAt(cxv, 3.6, 0);
   composer.render();
 }
 
 /* ---------- camera: 1:1 drag, momentum, rubber-band, zoom ---------- */
 const HOME = { az: .78, po: 1.22, r: 31 };
 const az = new Spring(HOME.az, .45, 1), po = new Spring(HOME.po, .4, 1), rad = new Spring(HOME.r, .4, 1);
-const PO_MIN = .45, PO_MAX = 1.5, R_MIN = 14, R_MAX = 52;
+const PO_MIN = .45, PO_MAX = 1.5, R_MIN = 14, R_MAX = 70;
 const rubber = (o, dim = 1.2, k = .55) => (o*dim*k)/(dim + k*Math.abs(o));
 let drag = null, raw = { a: HOME.az, p: HOME.po }, hist = [], vel = { a: 0, p: 0 }; const pointers = new Map(); let pinch0 = 0, r0 = 0;
 stage.addEventListener('pointerdown', e => { stage.setPointerCapture(e.pointerId); pointers.set(e.pointerId, e); stage.classList.add('grabbing'); vel = { a: 0, p: 0 }; raw = { a: az.x, p: po.x }; hist = []; az.v = po.v = 0; az.t = az.x; po.t = po.x; if (pointers.size === 2) { const [p1, p2] = [...pointers.values()]; pinch0 = Math.hypot(p1.clientX - p2.clientX, p1.clientY - p2.clientY); r0 = rad.x; } drag = { x: e.clientX, y: e.clientY }; });
@@ -376,7 +453,7 @@ stage.addEventListener('wheel', e => { e.preventDefault(); rad.t = clamp(rad.t +
 stage.addEventListener('dblclick', () => { az.t = HOME.az; po.t = HOME.po; rad.t = HOME.r; });
 
 /* ---------- controls ---------- */
-const PC = { carica: '#aab3c2', fusione: '#f59a3a', colata: '#ff5b2e' };
+const PC = { carica: '#aab3c2', fusione: '#f59a3a', colata: '#ff5b2e', taglio: '#5fc9a6' };
 const ICON = { play: '<svg viewBox="0 0 16 16"><path d="M4 2.5v11l9.5-5.5z"/></svg>', pause: '<svg viewBox="0 0 16 16"><rect x="3.5" y="2.5" width="3" height="11" rx="1"/><rect x="9.5" y="2.5" width="3" height="11" rx="1"/></svg>', again: '<svg viewBox="0 0 16 16"><path d="M8 2.5a5.5 5.5 0 1 0 5.4 6.5h-1.6A4 4 0 1 1 8 4v2.2l3.2-3-3.2-3z"/></svg>' };
 const tabs = document.getElementById('tabs'), segs = document.getElementById('segs'), head = document.getElementById('head'), strip = document.getElementById('strip'), playBtn = document.getElementById('play');
 PH.forEach(p => {
@@ -397,8 +474,8 @@ function sync() {
 }
 if (reduce) document.getElementById('hint').textContent = 'Animazioni ridotte: usa la barra in basso.';
 let last = performance.now(); sync();
-[S.roof, S.roofLift, S.tilt, ...S.eY, S.bx, S.by, S.br, S.car].forEach(k => k.set(k.t));
-const SPEED = { carica: .8, fusione: 5, colata: 1.6 }; // replay minutes per second, per phase
+[S.roof, S.roofLift, S.tilt, ...S.eY, S.bx, S.by, S.br, S.car, S.cx, S.cr].forEach(k => k.set(k.t));
+const SPEED = { carica: .8, fusione: 5, colata: 1.6, taglio: 2.3 }; // replay minutes per second, per phase
 function loop(now) {
   const dt = clamp((now - last)/1000, 0, .05); last = now;
   if (playing) { t += dt*SPEED[model(t).phase.id]; if (t >= END) { t = END; if (auto) { hold += dt; if (hold > 3.6) { t = 0; hold = 0; } } else playing = false; } sync(); }
