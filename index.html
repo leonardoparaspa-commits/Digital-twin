@@ -296,6 +296,13 @@ for (let u = 1.2; u < PATH_V + PATH_A - .3; u += .85) {
   for (const sg of [-1, 1]) { const r = add(caster, new THREE.CylinderGeometry(.14, .14, 1.0, 12), mRoll, q.x + sg*q.nx*(STRAND_R + .15), q.y + sg*q.ny*(STRAND_R + .15), 0); r.rotation.x = Math.PI/2; }
   if (u > 2.4) { const sp = new THREE.Mesh(new THREE.CylinderGeometry(.5, .5, .55, 14, 1, true), mSpray); sp.position.set(q.x, q.y, 0); sp.rotation.z = q.ang; sp.userData.u = u; caster.add(sp); sprays.push(sp); }
 }
+// foundations and supports so nothing floats: concrete pad, deck, tundish legs, roller-table legs, strand guide frame
+add(caster, new THREE.BoxGeometry(6.4, .3, 6.4), mConc, CX, .15, 0);
+for (const [x, z] of [[-1.3, -.9], [1.3, -.9], [-1.3, .9], [1.3, .9]]) add(caster, new THREE.BoxGeometry(.3, .5, .3), mTower, CX + x, 11.65, z);
+for (const z of [-1.8, 1.8]) add(caster, new THREE.BoxGeometry(4.2, .12, .35), STD(0x55585e, .6, .6), CX, 11.45, z);
+for (let x = HX + 1.5; x <= RACK_X + 1.4; x += 3.2) for (const z of [-.95, .95]) add(caster, new THREE.BoxGeometry(.25, .62, .25), mTower, x, .46, z);
+for (let u = 1.2; u < PATH_V + PATH_A - .3; u += .85) { const q = pathAt(u); for (const sg of [-1, 1]) { const g = add(caster, new THREE.BoxGeometry(.1, 1.0, .1), mTower, q.x, q.y, sg*.68); g.rotation.z = q.ang; } }
+for (const z of [-.68, .68]) { const rail = add(caster, new THREE.BoxGeometry(.1, 5.1, .1), mTower, CX + .45, MOLD_Y - 2.5, z); rail.visible = false; }
 const streamTun = new THREE.Mesh(new THREE.CylinderGeometry(.1, .1, 1, 10), new THREE.MeshBasicMaterial({ color: new THREE.Color(2.6, .8, .14) })); caster.add(streamTun);
 // roller table
 for (let x = HX - 1; x <= RACK_X + 1; x += 1.3) { const r = add(caster, new THREE.CylinderGeometry(.16, .16, 1.6, 12), mPipe, x, CY - .45, 0); r.rotation.x = Math.PI/2; }
