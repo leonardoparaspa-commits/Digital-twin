@@ -438,7 +438,7 @@ function frame(dt) {
   smokeAcc += dt*rate; while (smokeAcc > 1) { smokeAcc--; const a = rnd()*6.28; emitSmoke(Math.cos(a)*3.1, 5.2, Math.sin(a)*3.1, M.phase.id === 'carica'); }
   for (const s of smoke) { const u = s.userData; if (u.life <= 0) { s.material.opacity = 0; continue; } u.life -= dt; const k = 1 - u.life/u.max; s.position.addScaledVector(u.v, dt); s.scale.setScalar(u.s0 + k*5.5); s.material.opacity = Math.sin(Math.PI*clamp(k))*.2; }
   // camera
-  const r = rad.step(dt) + S.cr.step(dt), cxv = S.cx.step(dt), a = az.x, p = po.x;
+  const r = rad.step(dt) + S.cr.step(dt), cxv0 = S.cx.step(dt), cxv = cxv0 + clamp((rad.x - 22)/48)*9*(1 - clamp((cxv0 - 1.6)/27)), a = az.x, p = po.x;
   camera.position.set(cxv + r*Math.sin(p)*Math.sin(a), 3.6 + r*Math.cos(p), r*Math.sin(p)*Math.cos(a)); camera.lookAt(cxv, 3.6, 0);
   composer.render();
 }
