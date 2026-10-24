@@ -723,18 +723,20 @@ const C = [
   { id: '24-0411', t: '12 ott · 09:50', c: 101100, l: 83100, a: 92000, m: [1217, 1099], s: 'emergency' },
   { id: '24-0412', t: '12 ott · 12:45', c: 100800, l: 92170, a: 92480, m: [1094, 1090], s: 'tara' },
   { id: '24-0413', t: '12 ott · 15:40', c: 100400, l: 91560, a: 91850, m: [1096, 1093], s: 'tara' }];
+// MAM and status are derived from the three weighings, never typed in: MAM = kg caricati / kg liquido × 1000
+C.forEach(x => { x.m = [Math.round(x.c / x.l * 1000), Math.round(x.c / x.a * 1000)]; const g = x.a - x.l; x.s = g >= 1000 ? 'emergency' : g >= 200 ? 'tara' : 'ok'; });
 const ST = { ok: ['In regola', '#30d158'], tara: ['Tara rilevata', '#ff9f0a'], emergency: ['Emergenza non registrata', '#ff453a'] };
 const $ = id => document.getElementById(id);
 const n = v => v.toLocaleString('it-IT');
 const kg = v => n(v) + ' kg';
 const clamp01 = v => Math.min(1, Math.max(0, v));
 const minus = v => (v < 0 ? '−' : '') + n(Math.abs(v));
-let cur = 5;
+let cur = C.length - 1; // the replay shows the newest colata
 
 // week
 const sum = k => C.reduce((s, x) => s + x[k], 0);
 const offM = Math.round(sum('c') / sum('l') * 1000), corM = Math.round(sum('c') / sum('a') * 1000);
-$('wM').innerHTML = `${corM}<small>/${offM}</small>`;
+$('wM').innerHTML = `${corM}<small>uff. ${offM}</small>`;
 $('wL').innerHTML = `${(sum('a') - sum('l')) / 1000 > 0 ? ((sum('a') - sum('l')) / 1000).toLocaleString('it-IT', { maximumFractionDigits: 1 }) : 0}<small>t</small>`;
 $('wR').innerHTML = `${C.filter(x => x.s !== 'ok').length}<small>su ${C.length}</small>`;
 
@@ -827,7 +829,7 @@ $('back').addEventListener('click', () => { const T = window.__twin; if (T.overv
     // the bar scale keeps its total after the crane has taken the bars away
     if (t < 55) maxW = 0; maxW = t >= 72.5 ? 1 : Math.max(maxW, T.weighed);
     show($('t3'), maxW > .02);
-    $('t3v').textContent = kg(Math.round(d.l*.975*maxW/10)*10);
+    $('t3v').textContent = kg(Math.round(d.a*.975*maxW/10)*10); // bars weigh what was really poured (≈97,5% of the liquid), the cross-check on the ladle reading
     pj(-11.5, 4.2, 0, $('t1')); pj(7.7, 5.2, 0, $('t2')); pj(39.5, 3.6, 0, $('t3'));
     if (T.overview) document.querySelectorAll('.st').forEach(b => pj(...SPOT[b.dataset.id], b));
   }
