@@ -150,10 +150,10 @@ const pivot = new THREE.Group(); pivot.position.set(3.4, 1, 0); scene.add(pivot)
 const body = new THREE.Group(); body.position.set(-3.4, -1, 0); pivot.add(body);
 const bowl = add(body, new THREE.LatheGeometry([[0, 1.0], [1.8, 1.04], [2.8, 1.35], [3.35, 2.0], [3.5, 2.8], [3.5, 3.4]].map(p => new THREE.Vector2(p[0], p[1])), 72), mShell); bowl.material.side = THREE.DoubleSide;
 add(body, new THREE.CylinderGeometry(3.52, 3.5, 1.3, 72, 1, true), mShell, 0, 4.0, 0).material = new THREE.MeshStandardMaterial({ color: 0x4a5059, roughness: .55, metalness: .75, map: steel, side: THREE.DoubleSide, envMapIntensity: .55 });
-add(body, new THREE.CylinderGeometry(3.22, 3.22, 3.3, 72, 1, true), mBrick, 0, 2.95, 0);
-const rimR = add(body, new THREE.TorusGeometry(3.38, .18, 12, 96), mPipe, 0, 4.62, 0); rimR.rotation.x = Math.PI/2;
+add(body, new THREE.CylinderGeometry(3.22, 3.22, 3.3, 72, 1, true), mBrick, 0, 2.95, 0).receiveShadow = false;
+const rimR = add(body, new THREE.TorusGeometry(3.38, .18, 12, 96), mPipe, 0, 4.62, 0); rimR.rotation.x = Math.PI/2; rimR.receiveShadow = false;
 for (let i = 0; i < 22; i++) { const a = i*Math.PI*2/22, p = add(body, new THREE.BoxGeometry(1.2, 1.05, .14), mPanel, Math.cos(a)*3.58, 4.05, Math.sin(a)*3.58); p.rotation.y = -a + Math.PI/2; }
-for (const y of [3.55, 4.55]) { const t = add(body, new THREE.TorusGeometry(3.62, .06, 8, 96), mPipe, 0, y, 0); t.rotation.x = Math.PI/2; }
+for (const y of [3.55, 4.55]) { const t = add(body, new THREE.TorusGeometry(3.62, .06, 8, 96), mPipe, 0, y, 0); t.rotation.x = Math.PI/2; t.receiveShadow = false; }
 for (const z of [-2.5, 2.5]) { add(body, new THREE.BoxGeometry(9.4, .5, .7), mDark, 0, .55, z); add(body, new THREE.BoxGeometry(.5, .9, .7), mDark, -3.5, 1.0, z); }
 /* slag door: water-cooled steel door in a frame */
 const door = add(body, new THREE.BoxGeometry(2.2, 1.8, .3), STD(0x23252a, .85, .3, { envMapIntensity: .2 }), 0, 3.35, 3.55);
@@ -238,7 +238,7 @@ for (const [x, z] of [[-1.6, -1.15], [1.6, -1.15], [-1.6, 1.15], [1.6, 1.15]]) {
 add(ladleG, new THREE.CylinderGeometry(1.6, 1.3, 1.75, 40, 1, true), STD(0x464a52, .5, .75, { map: steel, side: THREE.FrontSide }), 0, 1.97, 0).castShadow = false;
 add(ladleG, new THREE.CylinderGeometry(1.45, 1.2, 1.7, 40, 1, true), mBrick, 0, 1.97, 0).receiveShadow = false; // shell and lining don't shadow each other: grazing light drew dark bands
 add(ladleG, new THREE.CylinderGeometry(1.25, 1.25, .1, 40), STD(0x1a1512, .9, 0), 0, 1.2, 0);
-const lrim = add(ladleG, new THREE.TorusGeometry(1.58, .1, 10, 60), mPipe, 0, 2.85, 0); lrim.rotation.x = Math.PI/2;
+const lrim = add(ladleG, new THREE.TorusGeometry(1.58, .1, 10, 60), mPipe, 0, 2.85, 0); lrim.rotation.x = Math.PI/2; lrim.receiveShadow = false;
 const trun = add(ladleG, new THREE.CylinderGeometry(.16, .16, 4.0, 14), mPipe, 0, 2.3, 0); trun.rotation.x = Math.PI/2;
 for (const z of [-1.8, 1.8]) add(ladleG, new THREE.BoxGeometry(.5, .8, .2), mDark, 0, 2.5, z);
 /* tapping scale under the ladle car: weigh platform, load cells, display post */
