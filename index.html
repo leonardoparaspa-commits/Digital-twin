@@ -130,7 +130,7 @@ const add = (parent, geo, mat, x = 0, y = 0, z = 0) => { const m = sh(new THREE.
 /* ---------- lights ---------- */
 scene.add(new THREE.HemisphereLight(0x7080a8, 0x15110d, .32));
 const key = new THREE.DirectionalLight(0xdfe6f5, .95); key.position.set(12, 24, 14); key.castShadow = true;
-Object.assign(key.shadow.camera, { left: -17, right: 17, top: 17, bottom: -17, near: 1, far: 70 }); key.shadow.mapSize.set(2048, 2048); key.shadow.bias = -.0008; key.shadow.normalBias = .06; scene.add(key, key.target);
+Object.assign(key.shadow.camera, { left: -17, right: 17, top: 17, bottom: -17, near: 1, far: 70 }); key.shadow.mapSize.set(4096, 4096); key.shadow.bias = -.0004; key.shadow.normalBias = .04; key.shadow.radius = 3; scene.add(key, key.target);
 const rimL = new THREE.DirectionalLight(0x5a78b8, .5); rimL.position.set(-14, 10, -16); scene.add(rimL);
 const glow = new THREE.PointLight(0xff7a2a, 0, 16, 2); glow.position.set(0, 3.4, 0); scene.add(glow);
 const glow2 = new THREE.PointLight(0xff8a30, 0, 10, 2); glow2.position.set(7.7, 3, 0); scene.add(glow2);
@@ -463,7 +463,7 @@ function frame(dt) {
   // camera
   const r = rad.step(dt) + S.cr.step(dt), cxv0 = S.cx.step(dt), cxv = cxv0, a = az.x, p = po.x;
   // the sun's shadow box follows the view, so shadows are never cut off and keep their resolution
-  const sb = 14 + r*.3; key.position.set(cxv + 12, 24, 14); key.target.position.set(cxv, 0, 0);
+  const sb = 9 + r*.24; key.position.set(cxv + 12, 24, 14); key.target.position.set(cxv, 0, 0);
   if (Math.abs(key.shadow.camera.right - sb) > .5) { Object.assign(key.shadow.camera, { left: -sb, right: sb, top: sb, bottom: -sb }); key.shadow.camera.updateProjectionMatrix(); }
   scene.fog.near = r*1.1; scene.fog.far = r*2.6; // fog keeps the same feel at every zoom
   const px = pan.x.step(dt), pz = pan.z.step(dt);
