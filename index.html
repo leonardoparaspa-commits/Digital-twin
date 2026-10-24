@@ -99,7 +99,7 @@ const stage = document.getElementById('stage'), canvas = document.getElementById
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
 renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.75));
 renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-const scene = new THREE.Scene(); scene.background = new THREE.Color(0x0b0b0e); scene.fog = new THREE.Fog(0x0b0b0e, 34, 80);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0xeef0f3); scene.fog = new THREE.Fog(0xeef0f3, 34, 80);
 const pm = new THREE.PMREMGenerator(renderer); scene.environment = pm.fromScene(new THREE.RoomEnvironment(), .04).texture;
 const camera = new THREE.PerspectiveCamera(34, 2, .1, 140); window.__cam = camera;
 const composer = new THREE.EffectComposer(renderer);
@@ -120,9 +120,9 @@ new ResizeObserver(size).observe(stage); size();
 
 /* ---------- materials ---------- */
 const STD = (color, rough = .6, metal = .5, o = {}) => { const m = new THREE.MeshStandardMaterial(Object.assign({ color, roughness: rough, metalness: metal, envMapIntensity: .55 }, o)); m.color.convertSRGBToLinear(); return m; };
-const mShell = STD(0x4a5059, .55, .75, { map: steel }), mPanel = STD(0x8a9099, .4, .8, { map: steel }), mDark = STD(0x23252a, .6, .7), mPipe = STD(0xb7bcc3, .3, .9);
+const mShell = STD(0x4a5059, .55, .75, { map: steel }), mPanel = STD(0x8a9099, .4, .8, { map: steel }), mDark = STD(0x6b7079, .6, .6), mPipe = STD(0xb7bcc3, .3, .9);
 const mBrick = STD(0xffffff, .95, 0, { map: brick, side: THREE.BackSide }), mRoof = STD(0x2c3035, .7, .35, { map: steel, side: THREE.DoubleSide, envMapIntensity: .25 }), mGraph = STD(0x1e1f22, .55, .35);
-const mClamp = STD(0x9a6b2f, .5, .7), mConc = STD(0xffffff, .95, 0, { map: concrete }), mYellow = STD(0xc9a21e, .7, .1);
+const mClamp = STD(0x9a6b2f, .5, .7), mConc = STD(0xdcdfe4, .9, 0), mYellow = STD(0xc9a21e, .7, .1);
 const mScrap = [STD(0x7a5a45, .7, .6, { map: rust }), STD(0x5d5f66, .5, .8), STD(0x8d6b4d, .8, .5, { map: rust }), STD(0x3d3f45, .5, .7)];
 const sh = o => { o.castShadow = o.receiveShadow = true; return o; };
 const add = (parent, geo, mat, x = 0, y = 0, z = 0) => { const m = sh(new THREE.Mesh(geo, mat)); m.position.set(x, y, z); parent.add(m); return m; };
@@ -272,7 +272,7 @@ const stream = new THREE.Mesh(new THREE.CylinderGeometry(.16, .12, 1, 14), new T
 /* ---------- continuous caster, shear and bar scale (after tapping) ---------- */
 const CX = 25, CR = 4, CY = 1.45, MOLD_Y = 10.5, ARC_Y = CY + CR, HX = CX + CR, SHEAR_X = HX + 3.5, SCALE_X = SHEAR_X + 7, RACK_X = SCALE_X + 7.5;
 const STRAND_R = .24, BIL_LEN = 3.2, HOT = new THREE.Color(2.6, .8, .12), COLD = new THREE.Color(.5, .2, .1);
-const mTower = STD(0x2a2d33, .8, .5, { envMapIntensity: .25 }), mCopper = STD(0xb06a3b, .45, .85);
+const mTower = STD(0xb9bec6, .7, .4, { envMapIntensity: .25 }), mCopper = STD(0xb06a3b, .45, .85);
 const caster = new THREE.Group(); scene.add(caster);
 for (const [x, z] of [[-1.8, -1.8], [1.8, -1.8], [-1.8, 1.8], [1.8, 1.8]]) add(caster, new THREE.BoxGeometry(.5, 11.4, .5), mTower, CX + x, 5.7, z);
 for (const y of [4, 8, 11.4]) { add(caster, new THREE.BoxGeometry(4.2, .3, .3), mTower, CX, y, -1.8); add(caster, new THREE.BoxGeometry(4.2, .3, .3), mTower, CX, y, 1.8); add(caster, new THREE.BoxGeometry(.3, .3, 4.2), mTower, CX - 1.8, y, 0); add(caster, new THREE.BoxGeometry(.3, .3, 4.2), mTower, CX + 1.8, y, 0); }
@@ -693,7 +693,7 @@ body.ov .ovhint { display: block; }
     <div class="trio"><div><span>Caricato</span><b class="num" id="cC"></b></div><div><span>Letto</span><b class="num" id="cL"></b></div><div><span>Atteso</span><b class="num" id="cA"></b></div></div>
   </div>
   <div class="sec"><h3>MAM per colata</h3><svg class="spark" id="spark" viewBox="0 0 300 64" preserveAspectRatio="none"></svg>
-    <div class="leg"><span style="--c:rgba(235,235,245,.45)">ufficiale</span><span style="--c:var(--green)">corretta</span></div></div>
+    <div class="leg"><span style="--c:var(--ink3)">ufficiale</span><span style="--c:var(--green)">corretta</span></div></div>
   <details class="sec fold" open><summary><h3>Ultime colate</h3><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg></summary><div class="list" id="list"></div></details>
 </aside>
 
@@ -779,9 +779,9 @@ function live(t, yard, fill) {
     const w = Math.min(1, Math.abs(gap) / 1000) * 50; // deviation meter centred on the expected liquid, ±1 t full scale
     $('bG').style.left = (gap < 0 ? 50 - w : 50) + '%'; $('bG').style.width = Math.max(w, .8) + '%';
   } else {
-    p.textContent = 'In corso'; p.style.setProperty('--c', 'rgba(235,235,245,.6)');
+    p.textContent = 'In corso'; p.style.setProperty('--c', 'var(--ink2)');
     cancelAnimationFrame(raf); shown = null; $('cMam').innerHTML = '<span style="color:var(--ink3)">····</span>'; $('cVs').textContent = 'a fine colata';
-    $('cGap').textContent = 'in attesa'; bal.style.setProperty('--c', 'rgba(235,235,245,.6)');
+    $('cGap').textContent = 'in attesa'; bal.style.setProperty('--c', 'var(--ink2)');
     $('bG').style.left = '50%'; $('bG').style.width = '0%';
   }
 }
@@ -830,3 +830,23 @@ $('back').addEventListener('click', () => { const T = window.__twin; if (T.overv
 })();
 })();
 </script>
+<style>
+/* light theme */
+:root { --bg: #eef0f3; --fg: #1c1c1e; --muted: #6b6f78; --line: #dcdfe4; --glass: rgba(255,255,255,.78); --ink2: rgba(60,60,67,.66); --ink3: rgba(60,60,67,.4); --green: #1f9d47; color-scheme: light; }
+body { background: var(--bg); color: var(--fg); }
+.insp.mat { background: #ffffff !important; border-right: 1px solid #e3e5ea !important; color: var(--fg); }
+.insp .week { border-bottom-color: #e8eaee !important; }
+.insp .bar { background: #e8eaef; } .insp .bar::after { background: #1c1c1e; }
+.list .pick[aria-current="true"] { background: #f0f1f4 !important; }
+.list .rp { background: #eef0f3; color: #3c3c43; }
+.fold summary:hover { background: #f3f4f6; }
+.dock { background: rgba(255,255,255,.86) !important; border: 1px solid #e3e5ea !important; box-shadow: 0 10px 30px rgba(20,24,32,.12) !important; color: var(--fg); }
+.dock .btn { background: #1c1c1e !important; color: #fff !important; }
+.strip .seg { background: #e3e5ea !important; }
+.tab { color: var(--muted); } .tab:hover { color: var(--fg); }
+.st.mat, .back.mat { background: #ffffff !important; border: 1px solid #dcdfe4 !important; color: var(--fg) !important; }
+.st.mat:hover, .back.mat:hover { background: #f3f4f6 !important; }
+.mat.tag { background: rgba(255,255,255,.92); border: 1px solid #dcdfe4; color: var(--fg); box-shadow: 0 6px 18px rgba(20,24,32,.12); }
+.tag::after { background: rgba(28,28,30,.35); }
+.spark polyline:first-of-type { stroke: rgba(60,60,67,.35); }
+</style>
