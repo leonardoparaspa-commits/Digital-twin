@@ -582,9 +582,11 @@ window.__ready = true;
 
 /* week summary under the title */
 .week { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding-bottom: 18px; border-bottom: 1px solid rgba(255,255,255,.07); }
-.brand h1 { font-size: 15px; font-weight: 600; letter-spacing: -.01em; }
+.brand { display: flex; gap: 10px; align-items: center; }
+.brand .mark { flex: none; width: 30px; height: 30px; border-radius: 8px; background: #ff9f0a; color: #121216; display: grid; place-items: center; }
+.brand h1 { font-size: 18px; font-weight: 600; letter-spacing: -.01em; }
 .brand p { color: var(--ink2); font-size: 12px; margin-top: 1px; }
-.week div span { display: block; color: var(--ink2); font-size: 11px; letter-spacing: .01em; }
+.week div span { display: block; white-space: nowrap; color: var(--ink2); font-size: 12px; letter-spacing: .01em; }
 .week div b { white-space: nowrap; font-size: 17px; font-weight: 600; letter-spacing: -.02em; line-height: 1.25; }
 .week div b small { font-size: 12px; font-weight: 500; color: var(--ink2); letter-spacing: 0; margin-left: 2px; }
 
@@ -593,22 +595,22 @@ window.__ready = true;
   max-height: calc(100% - 32px); overflow: auto; padding: 20px; display: flex; flex-direction: column; gap: 22px; scrollbar-width: none; }
 .hd { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
 .hd h2 { font-size: 17px; font-weight: 600; letter-spacing: -.015em; }
-.hd p { color: var(--ink2); font-size: 12px; margin-top: 1px; }
+.hd p { color: var(--ink2); font-size: 13px; margin-top: 1px; }
 .pill { flex: none; font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 99px; color: var(--c); background: color-mix(in srgb, var(--c) 16%, transparent); }
 .hero span { color: var(--ink2); font-size: 12px; }
 .hero .row { display: flex; align-items: baseline; gap: 12px; }
 .hero b { font-size: 44px; font-weight: 600; letter-spacing: -.035em; line-height: 1.05; }
 .hero .vs { color: var(--ink2); font-size: 13px; }
 .hero .vs i { font-style: normal; color: var(--green); font-weight: 600; }
-.bal .lbl { display: flex; justify-content: space-between; font-size: 12px; color: var(--ink2); margin-bottom: 8px; }
+.bal .lbl { display: flex; justify-content: space-between; font-size: 13px; color: var(--ink2); margin-bottom: 8px; }
 .bal .lbl em { font-style: normal; color: var(--c); font-weight: 600; }
 .bar { position: relative; height: 10px; border-radius: 5px; background: rgba(255,255,255,.08); }
 .bar::after { content: ""; position: absolute; left: 50%; top: -3px; bottom: -3px; width: 2px; margin-left: -1px; border-radius: 1px; background: rgba(235,235,245,.9); }
-.scale { display: flex; justify-content: space-between; color: var(--ink3); font-size: 10px; margin-top: 5px; }
+.scale { display: flex; justify-content: space-between; color: var(--ink3); font-size: 11px; margin-top: 5px; }
 .bar .g { position: absolute; top: 0; bottom: 0; background: var(--c); border-radius: 5px; transition: left .45s cubic-bezier(.2,.8,.2,1), width .45s cubic-bezier(.2,.8,.2,1); }
 .trio { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 12px; }
-.trio span { display: block; color: var(--ink3); font-size: 11px; }
-.trio b { font-size: 13px; font-weight: 500; }
+.trio span { display: block; color: var(--ink2); font-size: 12px; }
+.trio b { font-size: 14px; font-weight: 500; }
 .sec h3 { font-size: 13px; font-weight: 600; letter-spacing: -.005em; margin-bottom: 6px; }
 .list { display: flex; flex-direction: column; margin: 0 -8px; }
 .fold summary { list-style: none; display: flex; align-items: center; justify-content: space-between; cursor: pointer; padding: 6px 8px; margin: 0 -8px; border-radius: 10px; color: var(--ink2); transition: background 120ms; }
@@ -623,7 +625,7 @@ window.__ready = true;
 .list .rp:hover { background: var(--c); color: #111; }
 .list .rp:active { transform: scale(.9); }
 .list .rp:focus-visible { outline: 1px solid var(--accent); }
-.list .pick { all: unset; display: grid; grid-template-columns: 8px 1fr auto; align-items: center; gap: 10px; padding: 8px; border-radius: 10px; cursor: default; font-size: 13px; transition: background 120ms; }
+.list .pick { all: unset; display: grid; grid-template-columns: 8px 1fr auto; align-items: center; gap: 10px; padding: 8px; border-radius: 10px; cursor: default; font-size: 14px; transition: background 120ms; }
 .list .pick.no-hover { background: rgba(255,255,255,.05); }
 .list .pick:active { transform: scale(.985); }
 .list .pick[aria-current="true"] { background: rgba(255,255,255,.1); }
@@ -633,7 +635,7 @@ window.__ready = true;
 .list .gap { color: var(--ink2); }
 .list .gap.hot { color: var(--c); }
 .spark { width: 100%; height: 64px; display: block; overflow: visible; }
-.leg { display: flex; gap: 14px; color: var(--ink2); font-size: 11px; margin-top: 6px; }
+.leg { display: flex; gap: 14px; color: var(--ink2); font-size: 12px; margin-top: 6px; }
 .leg span::before { content: ""; display: inline-block; width: 10px; height: 2px; border-radius: 1px; background: var(--c); vertical-align: 3px; margin-right: 6px; }
 
 /* whole chain: stations to pick, way back */
@@ -650,7 +652,8 @@ body.ov .ovhint { display: block; }
 .back:focus-visible { outline: 1px solid var(--accent); outline-offset: 3px; }
 .back { left: auto !important; right: max(16px, env(safe-area-inset-right, 0px)); transform: none !important; width: 40px; height: 40px; padding: 0 !important; justify-content: center; }
 .back .co, body.ov .back .ex { display: none; } body.ov .back .co { display: block; }
-.st.mat, .back.mat { background: var(--glass); -webkit-backdrop-filter: blur(28px) saturate(180%); backdrop-filter: blur(28px) saturate(180%); border: 1px solid rgba(255,255,255,.08); box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 10px 30px rgba(0,0,0,.35); }
+.st.mat, .back.mat { background: #1c1c21; -webkit-backdrop-filter: none; backdrop-filter: none; border: 1px solid rgba(255,255,255,.1); box-shadow: none; }
+.dock .btn { box-shadow: none !important; }
 .st.mat:hover, .back.mat:hover { background: rgba(48,48,56,.75); }
 
 /* labels in the scene */
@@ -658,7 +661,7 @@ body.ov .ovhint { display: block; }
 .tag::after { content: ""; position: absolute; left: 50%; bottom: -10px; width: 1px; height: 10px; background: rgba(255,255,255,.35); }
 .tag.stuck { box-shadow: 0 0 0 1.5px var(--tc), 0 10px 30px rgba(0,0,0,.35); }
 .tag.stuck b { color: var(--tc); }
-.tag span { display: block; color: var(--ink2); font-size: 10px; font-weight: 500; }
+.tag span { display: block; color: var(--ink2); font-size: 11px; font-weight: 500; }
 .tag b { font-weight: 600; }
 
 @media (max-width: 860px) {
@@ -666,7 +669,7 @@ body.ov .ovhint { display: block; }
   #stage { left: 0; bottom: 45%; }
   .insp.mat { top: 55%; width: auto; right: 0; border-right: 0; border-top: 1px solid rgba(255,255,255,.07); }
   .back, .ovhint { left: 50%; }
-  .tag, .brand { display: none; }
+  .tag { display: none; }
   .dock { left: 50%; bottom: calc(45% + 12px); width: calc(100% - 32px); }
 }
 @media (prefers-reduced-transparency: reduce) { .mat { background: #1c1c20; backdrop-filter: none; -webkit-backdrop-filter: none; } }
@@ -674,10 +677,10 @@ body.ov .ovhint { display: block; }
 </style>
 
 <aside class="insp mat" aria-label="Dati del twin">
-<div class="brand"><h1>Forno elettrico ad arco</h1><p>Twin di colata</p></div>
+<div class="brand"><span class="mark" aria-hidden="true"><svg viewBox="0 0 16 16" width="16" height="16"><path d="M3 4h10l-1.4 8.2a1.5 1.5 0 0 1-1.5 1.3H5.9a1.5 1.5 0 0 1-1.5-1.3z" fill="currentColor"/><path d="M8 1.5v2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span><div><h1>Forno elettrico ad arco</h1><p>Twin di colata · Dalmine</p></div></div>
 <div class="week" aria-label="Settimana">
-  <div><span>MAM settimana</span><b class="num" id="wM"></b></div>
-  <div><span>Liquido non letto</span><b class="num" id="wL"></b></div>
+  <div><span>MAM sett.</span><b class="num" id="wM"></b></div>
+  <div><span>Non letto</span><b class="num" id="wL"></b></div>
   <div><span>Da rivedere</span><b class="num" id="wR"></b></div>
 </div>
 
@@ -704,6 +707,7 @@ body.ov .ovhint { display: block; }
 <div class="tag mat" id="t2"><span>Bilancia di colata</span><b class="num" id="t2v"></b></div>
 
 <script>
+document.querySelector('.title')?.remove(); // the sidebar carries the screen's title
 (() => {
 // dati simulati: kg caricati, kg liquido letto, kg liquido atteso, MAM ufficiale / corretta
 const C = [
