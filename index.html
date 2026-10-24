@@ -700,20 +700,34 @@ function spark() {
 }
 
 function render() {
-  const d = C[cur], st = ST[d.s], gap = d.l - d.a;
+  const d = C[cur];
   $('cId').textContent = 'Colata ' + d.id; $('cSub').textContent = `C45 · ${d.t} · dati simulati`;
-  const p = $('cPill'); p.textContent = st[0]; p.style.setProperty('--c', st[1]);
-  tween(d.m[1]);
-  $('cVs').innerHTML = d.m[0] === d.m[1] ? 'uguale all’ufficiale' : `ufficiale ${d.m[0]} <i>−${d.m[0] - d.m[1]}</i>`;
-  const bal = document.querySelector('.bal'); bal.style.setProperty('--c', st[1]);
-  $('cGap').textContent = gap === 0 ? 'in pari' : minus(gap) + ' kg';
-  // deviation meter centred on the expected liquid, ±1 t full scale
-  const w = Math.min(1, Math.abs(gap) / 1000) * 50;
-  $('bG').style.left = (gap < 0 ? 50 - w : 50) + '%'; $('bG').style.width = Math.max(w, .8) + '%';
-  $('cC').textContent = kg(d.c); $('cL').textContent = kg(d.l); $('cA').textContent = kg(d.a);
   $('list').innerHTML = C.slice(-5).reverse().map(x => { const i = C.indexOf(x), g = x.l - x.a;
     return `<button type="button" data-i="${i}" aria-current="${i === cur}" style="--c:${ST[x.s][1]}"><i></i><span>${x.id}<small>${ST[x.s][0]}</small></span><span class="gap num ${x.s !== 'ok' ? 'hot' : ''}">${minus(g)} kg</span></button>`; }).join('');
-  spark();
+  spark(); lastDone = null;
+}
+// the selected colata fills in as the replay goes: weighed charge, expected liquid, ladle reading, then the verdict
+let lastDone = null;
+function live(t, yard, fill) {
+  const d = C[cur], st = ST[d.s], gap = d.l - d.a, done = t >= 54.9, tapping = t >= 47.2;
+  $('cC').textContent = t > .35 ? kg(Math.round(d.c*yard/10)*10) : '—';
+  $('cA').textContent = t >= 7 ? kg(d.a) : '—';
+  $('cL').textContent = tapping ? kg(Math.round(d.l*(done ? 1 : fill)/10)*10) : '—';
+  if (done === lastDone) return; lastDone = done;
+  const p = $('cPill'), bal = document.querySelector('.bal');
+  if (done) {
+    p.textContent = st[0]; p.style.setProperty('--c', st[1]); bal.style.setProperty('--c', st[1]);
+    tween(d.m[1]);
+    $('cVs').innerHTML = d.m[0] === d.m[1] ? 'uguale all\u2019ufficiale' : `ufficiale ${d.m[0]} <i>−${d.m[0] - d.m[1]}</i>`;
+    $('cGap').textContent = gap === 0 ? 'in pari' : minus(gap) + ' kg';
+    const w = Math.min(1, Math.abs(gap) / 1000) * 50; // deviation meter centred on the expected liquid, ±1 t full scale
+    $('bG').style.left = (gap < 0 ? 50 - w : 50) + '%'; $('bG').style.width = Math.max(w, .8) + '%';
+  } else {
+    p.textContent = 'In corso'; p.style.setProperty('--c', 'rgba(235,235,245,.6)');
+    cancelAnimationFrame(raf); shown = null; $('cMam').textContent = '—'; $('cVs').textContent = 'a fine colata';
+    $('cGap').textContent = 'in attesa'; bal.style.setProperty('--c', 'rgba(235,235,245,.6)');
+    $('bG').style.left = '50%'; $('bG').style.width = '0%';
+  }
 }
 $('list').addEventListener('click', e => { const b = e.target.closest('button[data-i]'); if (b) { cur = +b.dataset.i; render(); } });
 render();
@@ -733,6 +747,7 @@ $('back').addEventListener('click', () => window.__twin.goOverview());
     const d = C[cur], t = T.t;
     // yard scale: the bucket sits on it in the first ~1.6 min of carica
     const yard = clamp01((t - .35)/1.2);
+    live(t, yard, T.lf);
     show($('t1'), !T.overview && t > .35); $('t1v').textContent = kg(Math.round(d.c*yard/10)*10);
     // tapping scale: reads the ladle as it fills, then the final reading with the expected value
     const tap = t >= 47.2, fill = t < 55 ? T.lf : 1;
