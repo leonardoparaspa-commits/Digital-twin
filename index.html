@@ -440,7 +440,7 @@ function frame(dt) {
   smokeAcc += dt*rate; while (smokeAcc > 1) { smokeAcc--; const a = rnd()*6.28; emitSmoke(Math.cos(a)*3.1, 5.2, Math.sin(a)*3.1, M.phase.id === 'carica'); }
   for (const s of smoke) { const u = s.userData; if (u.life <= 0) { s.material.opacity = 0; continue; } u.life -= dt; const k = 1 - u.life/u.max; s.position.addScaledVector(u.v, dt); s.scale.setScalar(u.s0 + k*5.5); s.material.opacity = Math.sin(Math.PI*clamp(k))*.2; }
   // camera
-  const r = rad.step(dt) + S.cr.step(dt), cxv0 = S.cx.step(dt), cxv = cxv0 + clamp((rad.x - 22)/48)*9*(1 - clamp(Math.abs(cxv0 - 1.6)/16)), a = az.x, p = po.x;
+  const r = rad.step(dt) + S.cr.step(dt), cxv0 = S.cx.step(dt), cxv = cxv0, a = az.x, p = po.x;
   scene.fog.near = r*1.1; scene.fog.far = r*2.6; // fog keeps the same feel at every zoom
   camera.position.set(cxv + r*Math.sin(p)*Math.sin(a), Math.max(1.2, 3.6 + r*Math.cos(p)), r*Math.sin(p)*Math.cos(a)); // never below the floor camera.lookAt(cxv, 3.6, 0);
   composer.render();
@@ -536,6 +536,7 @@ window.__ready = true;
 .dock { left: calc(var(--ip) + (100% - var(--ip)) / 2); width: min(560px, calc(100% - var(--ip) - 80px)); }
 .title { display: none; }
 #stage { left: var(--ip); }
+#stage::after { content: ""; position: absolute; inset: 0 auto 0 0; width: 48px; background: linear-gradient(90deg, rgba(11,11,14,.55), transparent); pointer-events: none; }
 .insp.mat { left: 0; top: 0; bottom: 0; max-height: none; border-radius: 0; border: 0; border-right: 1px solid rgba(255,255,255,.07); background: #121216; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; padding: 24px 22px; }
 .hint { right: max(24px, env(safe-area-inset-right, 0px)); }
 .mat { background: var(--glass); -webkit-backdrop-filter: blur(28px) saturate(180%); backdrop-filter: blur(28px) saturate(180%);
