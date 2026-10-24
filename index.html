@@ -443,7 +443,7 @@ function frame(dt) {
   // camera
   const r = rad.step(dt) + S.cr.step(dt), cxv0 = S.cx.step(dt), cxv = cxv0, a = az.x, p = po.x;
   scene.fog.near = r*1.1; scene.fog.far = r*2.6; // fog keeps the same feel at every zoom
-  camera.position.set(cxv + r*Math.sin(p)*Math.sin(a), Math.max(1.2, 3.6 + r*Math.cos(p)), r*Math.sin(p)*Math.cos(a)); // never below the floor camera.lookAt(cxv, 3.6, 0);
+  camera.position.set(cxv + r*Math.sin(p)*Math.sin(a), Math.max(1.2, 3.6 + r*Math.cos(p)), r*Math.sin(p)*Math.cos(a)); camera.lookAt(cxv, 3.6, 0); // camera never goes below the floor
   composer.render();
 }
 
@@ -518,7 +518,7 @@ function pickStation(e) {
   goPhase(hit.x < -5.5 ? 'carica' : hit.x < 5 ? 'fusione' : hit.x < 19 ? 'colata' : 'taglio');
 }
 Object.assign(TW, { goPhase, goOverview });
-if (overview) { document.body.classList.add('ov'); az.set(OV.az); po.set(OV.po); }
+if (overview) { document.body.classList.add('ov'); az.set(OV.az); po.set(OV.po); S.cx.set(16.5); S.cr.set(46); } // open already framed on the whole chain
 if (reduce) document.getElementById('hint').textContent = 'Animazioni ridotte: usa la barra in basso.';
 let last = performance.now(); sync();
 [S.roof, S.roofLift, S.tilt, ...S.eY, S.bx, S.by, S.br, S.car, S.cx, S.cr].forEach(k => k.set(k.t));
@@ -537,7 +537,6 @@ window.__ready = true;
 .dock { left: calc(var(--ip) + (100% - var(--ip)) / 2); width: min(560px, calc(100% - var(--ip) - 80px)); }
 .title { display: none; }
 #stage { left: var(--ip); }
-#stage::after { content: ""; position: absolute; inset: 0 auto 0 0; width: 48px; background: linear-gradient(90deg, rgba(11,11,14,.55), transparent); pointer-events: none; }
 .insp.mat { left: 0; top: 0; bottom: 0; max-height: none; border-radius: 0; border: 0; border-right: 1px solid rgba(255,255,255,.07); background: #121216; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; padding: 24px 22px; }
 .hint { display: none !important; }
 .mat { background: var(--glass); -webkit-backdrop-filter: blur(28px) saturate(180%); backdrop-filter: blur(28px) saturate(180%);
@@ -736,8 +735,9 @@ render();
 
 function offset() { const c = window.__cam; if (!c) return; const w = innerWidth, h = innerHeight, k = w > 860 ? ($('stage').querySelector('canvas') && document.querySelector('.insp').offsetWidth + 32)/2 : 0; c.clearViewOffset(); }
 addEventListener('resize', offset); offset();
-const pj = (x, y, z, el) => { const r = $('stage').getBoundingClientRect(), v = new THREE.Vector3(x, y, z).project(window.__cam);
-  el.style.left = (r.left + (v.x + 1) / 2 * r.width) + 'px'; el.style.visibility = el.classList.contains('tag') && (r.left + (v.x + 1) / 2 * r.width) < document.querySelector('.insp').getBoundingClientRect().right + 70 ? 'hidden' : ''; el.style.top = (r.top + (1 - v.y) / 2 * r.height) + 'px'; };
+let R = null, IR = 0; // layout read once per frame, so label writes don't force a reflow each
+const pj = (x, y, z, el) => { const r = R, v = new THREE.Vector3(x, y, z).project(window.__cam);
+  el.style.left = (r.left + (v.x + 1) / 2 * r.width) + 'px'; el.style.visibility = el.classList.contains('tag') && (r.left + (v.x + 1) / 2 * r.width) < IR + 70 ? 'hidden' : ''; el.style.top = (r.top + (1 - v.y) / 2 * r.height) + 'px'; };
 // a scale's reading appears when that scale is in use, then stays until the replay starts over
 const show = (el, on) => { el.style.setProperty('--o', on ? 1 : 0); el.style.setProperty('--k', on ? 1 : .9); };
 const SPOT = { carica: [-11.5, 8, 0], fusione: [0, 11, 0], colata: [7.7, 8, 0], taglio: [36, 9, 0] };
@@ -746,6 +746,7 @@ $('back').addEventListener('click', () => window.__twin.goOverview());
 (function tick() {
   const T = window.__twin;
   if (window.__cam && T) {
+    R = $('stage').getBoundingClientRect(); IR = document.querySelector('.insp').getBoundingClientRect().right;
     const d = C[cur], t = T.t;
     // yard scale: the bucket sits on it in the first ~1.6 min of carica
     const yard = clamp01((t - .35)/1.2);
