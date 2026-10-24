@@ -598,8 +598,8 @@ window.__ready = true;
 .list .rp:hover { background: var(--c); color: #111; }
 .list .rp:active { transform: scale(.9); }
 .list .rp:focus-visible { outline: 1px solid var(--accent); }
-.list .pick { all: unset; display: grid; grid-template-columns: 8px 1fr auto; align-items: center; gap: 10px; padding: 8px; border-radius: 10px; cursor: pointer; font-size: 13px; transition: background 120ms; }
-.list .pick:hover { background: rgba(255,255,255,.05); }
+.list .pick { all: unset; display: grid; grid-template-columns: 8px 1fr auto; align-items: center; gap: 10px; padding: 8px; border-radius: 10px; cursor: default; font-size: 13px; transition: background 120ms; }
+.list .pick.no-hover { background: rgba(255,255,255,.05); }
 .list .pick:active { transform: scale(.985); }
 .list .pick[aria-current="true"] { background: rgba(255,255,255,.1); }
 .list .pick:focus-visible { outline: 1px solid var(--accent); }
@@ -728,7 +728,7 @@ function render() {
   const d = C[cur];
   $('cId').textContent = 'Colata ' + d.id; $('cSub').textContent = `C45 · ${d.t}`;
   $('list').innerHTML = C.slice(-5).reverse().map(x => { const i = C.indexOf(x), g = x.l - x.a;
-    return `<div class="row" style="--c:${ST[x.s][1]}"><button type="button" class="pick" data-i="${i}" aria-current="${i === cur}"><i></i><span>${x.id}<small>${{ ok: 'In regola', tara: 'Tara', emergency: 'Emergenza' }[x.s]}</small></span><span class="gap num ${x.s !== 'ok' ? 'hot' : ''}">${minus(g)} kg</span></button><button type="button" class="rp" data-r="${i}" aria-label="Rivedi la colata ${x.id}" title="Rivedi la colata"><svg viewBox="0 0 16 16" width="12" height="12"><path d="M4.5 2.8v10.4L13 8z" fill="currentColor"/></svg></button></div>`; }).join('');
+    return `<div class="row" style="--c:${ST[x.s][1]}"><div class="pick" aria-current="${i === cur}"><i></i><span>${x.id}<small>${{ ok: 'In regola', tara: 'Tara', emergency: 'Emergenza' }[x.s]}</small></span><span class="gap num ${x.s !== 'ok' ? 'hot' : ''}">${minus(g)} kg</span></div><button type="button" class="rp" data-r="${i}" aria-label="Rivedi la colata ${x.id}" title="Rivedi la colata"><svg viewBox="0 0 16 16" width="12" height="12"><path d="M4.5 2.8v10.4L13 8z" fill="currentColor"/></svg></button></div>`; }).join('');
   spark(); lastDone = null;
 }
 // the selected colata fills in as the replay goes: weighed charge, expected liquid, ladle reading, then the verdict
@@ -757,7 +757,6 @@ function live(t, yard, fill) {
 $('list').addEventListener('click', e => {
   const r = e.target.closest('button[data-r]');
   if (r) { cur = +r.dataset.r; render(); window.__twin.goPhase('carica'); return; } // replay that colata from the start
-  const b = e.target.closest('button[data-i]'); if (b) { cur = +b.dataset.i; render(); }
 });
 render();
 
