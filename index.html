@@ -414,7 +414,7 @@ function frame(dt) {
   TW.t = t; TW.lf = lf; TW.weighed = weighed/NB; TW.overview = overview;
   const bw = Math.max(.001, weighed/NB); bBar.scale.x = bw; bBar.position.x = -.33*(1 - bw);
   // camera follows the ladle to the caster
-  if (overview) { S.cx.t = 18; S.cr.t = 46; } else { S.cx.t = M.phase.id === 'taglio' ? 29 : 1.6; S.cr.t = M.phase.id === 'taglio' ? 27 : 0; }
+  if (overview) { S.cx.t = 16.5; S.cr.t = 46; } else { S.cx.t = M.phase.id === 'taglio' ? 29 : 1.6; S.cr.t = M.phase.id === 'taglio' ? 27 : 0; }
   const onYard = Math.abs(hook.position.x - YARD_X) < .3 && hook.position.y < 4.1 ? 1 : 0;
   yardW = clamp(yardW + (onYard - yardW)*clamp(dt*3)); const yw = Math.max(.001, yardW); yardBar.scale.x = yw; yardBar.position.x = -.33*(1 - yw); yardG.position.y = -.03*yardW; // platform settles slightly under load
   // glow lights
@@ -533,8 +533,10 @@ window.__ready = true;
 </script>
 <style>
 :root { --ip: 344px; --glass: rgba(24,24,28,.58); --glass-hi: rgba(255,255,255,.07); --ink2: rgba(235,235,245,.6); --ink3: rgba(235,235,245,.32); --green: #30d158; --orange: #ff9f0a; --red: #ff453a; }
-.dock { left: calc(var(--ip) + 32px + (100% - var(--ip) - 32px) / 2); width: min(560px, calc(100% - var(--ip) - 80px)); }
+.dock { left: calc(var(--ip) + (100% - var(--ip)) / 2); width: min(560px, calc(100% - var(--ip) - 80px)); }
 .title { display: none; }
+#stage { left: var(--ip); }
+.insp.mat { left: 0; top: 0; bottom: 0; max-height: none; border-radius: 0; border: 0; border-right: 1px solid rgba(255,255,255,.07); background: #121216; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; padding: 24px 22px; }
 .hint { right: max(24px, env(safe-area-inset-right, 0px)); }
 .mat { background: var(--glass); -webkit-backdrop-filter: blur(28px) saturate(180%); backdrop-filter: blur(28px) saturate(180%);
   border: 1px solid rgba(255,255,255,.06); box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 18px 50px rgba(0,0,0,.35); border-radius: 22px; }
@@ -591,9 +593,9 @@ window.__ready = true;
 .st:active { transform: translate(-50%, -50%) scale(.95); }
 .st:focus-visible { outline: 1px solid var(--accent); outline-offset: 3px; }
 body.ov .st { display: inline-flex; }
-.ovhint { position: fixed; left: calc(var(--ip) + 32px + (100% - var(--ip) - 32px) / 2); transform: translateX(-50%); top: max(20px, env(safe-area-inset-top, 0px)); padding: 9px 16px; border-radius: 99px; font-size: 13px; color: var(--ink2); display: none; pointer-events: none; }
+.ovhint { position: fixed; left: calc(var(--ip) + (100% - var(--ip)) / 2); transform: translateX(-50%); top: max(20px, env(safe-area-inset-top, 0px)); padding: 9px 16px; border-radius: 99px; font-size: 13px; color: var(--ink2); display: none; pointer-events: none; }
 body.ov .ovhint { display: block; }
-.back { all: unset; position: fixed; left: calc(var(--ip) + 32px + (100% - var(--ip) - 32px) / 2); transform: translateX(-50%); top: max(16px, env(safe-area-inset-top, 0px)); padding: 9px 16px; border-radius: 99px; font: 500 13px/1 inherit; font-family: inherit; color: var(--fg); cursor: pointer; transition: transform 100ms ease-out; }
+.back { all: unset; position: fixed; left: calc(var(--ip) + (100% - var(--ip)) / 2); transform: translateX(-50%); top: max(16px, env(safe-area-inset-top, 0px)); padding: 9px 16px; border-radius: 99px; font: 500 13px/1 inherit; font-family: inherit; color: var(--fg); cursor: pointer; transition: transform 100ms ease-out; }
 .back:active { transform: translateX(-50%) scale(.96); }
 .back:focus-visible { outline: 1px solid var(--accent); outline-offset: 3px; }
 body.ov .back, body.ov .hint { display: none; }
@@ -607,11 +609,12 @@ body.ov .back, body.ov .hint { display: none; }
 .tag b { font-weight: 600; }
 
 @media (max-width: 860px) {
-  :root { --ip: calc(100% - 32px); }
-  .insp { top: auto; bottom: 104px; max-height: 42%; }
+  :root { --ip: 0px; }
+  #stage { left: 0; bottom: 45%; }
+  .insp.mat { top: 55%; width: auto; right: 0; border-right: 0; border-top: 1px solid rgba(255,255,255,.07); }
   .back, .ovhint { left: 50%; }
-  .week, .tag, .brand { display: none; }
-  .dock { left: 50%; width: calc(100% - 32px); }
+  .tag, .brand { display: none; }
+  .dock { left: 50%; bottom: calc(45% + 12px); width: calc(100% - 32px); }
 }
 @media (prefers-reduced-transparency: reduce) { .mat { background: #1c1c20; backdrop-filter: none; -webkit-backdrop-filter: none; } }
 @media (prefers-reduced-motion: reduce) { .bar .g { transition: none; } }
@@ -715,7 +718,7 @@ function render() {
 $('list').addEventListener('click', e => { const b = e.target.closest('button[data-i]'); if (b) { cur = +b.dataset.i; render(); } });
 render();
 
-function offset() { const c = window.__cam; if (!c) return; const w = innerWidth, h = innerHeight, k = w > 860 ? ($('stage').querySelector('canvas') && document.querySelector('.insp').offsetWidth + 32)/2 : 0; c.setViewOffset(w, h, -k, 0, w, h); }
+function offset() { const c = window.__cam; if (!c) return; const w = innerWidth, h = innerHeight, k = w > 860 ? ($('stage').querySelector('canvas') && document.querySelector('.insp').offsetWidth + 32)/2 : 0; c.clearViewOffset(); }
 addEventListener('resize', offset); offset();
 const pj = (x, y, z, el) => { const r = $('stage').getBoundingClientRect(), v = new THREE.Vector3(x, y, z).project(window.__cam);
   el.style.left = (r.left + (v.x + 1) / 2 * r.width) + 'px'; el.style.visibility = el.classList.contains('tag') && (r.left + (v.x + 1) / 2 * r.width) < document.querySelector('.insp').getBoundingClientRect().right + 70 ? 'hidden' : ''; el.style.top = (r.top + (1 - v.y) / 2 * r.height) + 'px'; };
