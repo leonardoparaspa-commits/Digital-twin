@@ -251,6 +251,7 @@ const disp = new THREE.Group(); disp.position.set(2.9, 3.2, 2.5); disp.rotation.
 add(disp, new THREE.BoxGeometry(.9, .6, .2), STD(0x15171a, .4, .5), 0, 0, 0);
 add(disp, new THREE.PlaneGeometry(.74, .42), new THREE.MeshBasicMaterial({ color: 0x0a1410 }), 0, 0, .105).castShadow = false;
 const scaleBar = add(disp, new THREE.PlaneGeometry(.66, .3), new THREE.MeshBasicMaterial({ color: new THREE.Color(.3, 1.1, .5) }), 0, 0, .11); scaleBar.castShadow = false;
+const BAR_OK = new THREE.Color(.3, 1.1, .5), BAR_DIM = new THREE.Color(.05, .05, .05);
 const scaleTick = add(disp, new THREE.PlaneGeometry(.02, .36), new THREE.MeshBasicMaterial({ color: 0xffffff }), 0, 0, .115); scaleTick.castShadow = false;
 /* scrap-yard scale: the bucket is weighed here before the crane lifts it */
 const YARD_X = -11.5;
@@ -401,7 +402,9 @@ function frame(dt) {
   const sink = t < 55 ? -.035*lf : 0;
   ladleG.position.set(onHook ? lx : carG.position.x, onHook ? ly : sink, 0); carG.position.y = sink;
   hook2.visible = trolley2.visible = t >= 55; hook2.position.set(onHook ? lx : 17.2, onHook ? ly + 5.5 : 17 - 11.5*down, 0); trolley2.position.x = hook2.position.x;
-  const w = Math.max(.001, t < 55 ? lf : 0); scaleBar.scale.x = w; scaleBar.position.x = -.33*(1 - w);
+  // the tapping scale replays what it really read: it stops at its last reading while the ladle keeps filling
+  const cap = TW.cap ?? 1, stuck = t < 55 && lf > cap + .001, w = Math.max(.001, t < 55 ? Math.min(lf, cap) : 0); scaleBar.scale.x = w; scaleBar.position.x = -.33*(1 - w);
+  scaleBar.material.color.copy(stuck ? (Math.sin(clock*9) > 0 ? TW.warn : BAR_DIM) : BAR_OK);
   scaleTick.position.x = -.33 + .66*w; scaleTick.visible = w > .02 && w < .99;
   // casting: strand grows from the mold along the curved path, shear cuts bars that ride to the scale
   const V = MOLD_Y - ARC_Y, AL = Math.PI/2*CR, H = SHEAR_X - HX, head = (V + AL + H)*clamp((tau - .46)/.14);
@@ -631,6 +634,8 @@ body.ov .ovhint { display: block; }
 /* labels in the scene */
 .tag { position: fixed; transform: translate(-50%, calc(-100% - 10px)) scale(var(--k, 1)); opacity: var(--o, 0); transition: opacity .3s, transform .3s cubic-bezier(.2,.8,.2,1); transform-origin: 50% 100%; padding: 7px 11px; border-radius: 12px; font-size: 12px; pointer-events: none; white-space: nowrap; }
 .tag::after { content: ""; position: absolute; left: 50%; bottom: -10px; width: 1px; height: 10px; background: rgba(255,255,255,.35); }
+.tag.stuck { box-shadow: 0 0 0 1.5px var(--tc), 0 10px 30px rgba(0,0,0,.35); }
+.tag.stuck b { color: var(--tc); }
 .tag span { display: block; color: var(--ink2); font-size: 10px; font-weight: 500; }
 .tag b { font-weight: 600; }
 
@@ -737,7 +742,7 @@ function live(t, yard, fill) {
   const d = C[cur], st = ST[d.s], gap = d.l - d.a, done = t >= 54.9, tapping = t >= 47.2;
   $('cC').textContent = t > .35 ? kg(Math.round(d.c*yard/10)*10) : '—';
   $('cA').textContent = t >= 7 ? kg(d.a) : '—';
-  $('cL').textContent = tapping ? kg(Math.round(d.l*(done ? 1 : fill)/10)*10) : '—';
+  $('cL').textContent = tapping ? kg(done ? d.l : Math.min(d.l, Math.round(d.a*fill/10)*10)) : '—';
   if (done === lastDone) return; lastDone = done;
   const p = $('cPill'), bal = document.querySelector('.bal');
   if (done) {
@@ -781,8 +786,12 @@ $('back').addEventListener('click', () => { const T = window.__twin; if (T.overv
     show($('t1'), t > .35); $('t1v').textContent = kg(Math.round(d.c*yard/10)*10);
     // tapping scale: reads the ladle as it fills, then the final reading with the expected value
     const tap = t >= 47.2, fill = t < 55 ? T.lf : 1;
+    // what the scale actually registered for this colata: it stops reading at d.l
+    T.cap = d.l / d.a; T.warn = T.warn || new THREE.Color(); T.warn.set(d.s === 'emergency' ? '#ff453a' : '#ff9f0a').multiplyScalar(1.6);
+    const stuck = tap && d.a*fill > d.l + 5;
+    $('t2').style.setProperty('--tc', stuck ? (d.s === 'emergency' ? '#ff453a' : '#ff9f0a') : 'transparent'); $('t2').classList.toggle('stuck', stuck);
     show($('t2'), tap);
-    $('t2v').textContent = fill > .99 ? `${n(d.l)} letti · ${n(d.a)} attesi` : kg(Math.round(d.l*fill/10)*10);
+    $('t2v').textContent = fill > .99 ? `${n(d.l)} letti · ${n(d.a)} attesi` : stuck ? `${n(d.l)} kg · lettura ferma` : kg(Math.round(d.a*fill/10)*10);
     // bar scale at the end of the caster
     show($('t3'), T.weighed > .02);
     $('t3v').textContent = kg(Math.round(d.l*.975*T.weighed/10)*10);
