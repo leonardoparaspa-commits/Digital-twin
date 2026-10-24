@@ -597,7 +597,9 @@ window.__ready = true;
 .hd h2 { font-size: 17px; font-weight: 600; letter-spacing: -.015em; }
 .hd p { color: var(--ink2); font-size: 13px; margin-top: 1px; }
 .pill { flex: none; font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 99px; color: var(--c); background: color-mix(in srgb, var(--c) 16%, transparent); }
-.hero span { color: var(--ink2); font-size: 12px; }
+.hero { background: color-mix(in srgb, var(--green) 9%, transparent); border: 1px solid color-mix(in srgb, var(--green) 30%, transparent); border-radius: 16px; padding: 14px 16px 12px; }
+.hero .hl { color: var(--green); font-size: 12px; font-weight: 600; letter-spacing: .01em; }
+.hero .hl em { font-style: normal; font-weight: 400; color: var(--ink2); }
 .hero .row { display: flex; align-items: baseline; gap: 12px; }
 .hero b { font-size: 44px; font-weight: 600; letter-spacing: -.035em; line-height: 1.05; }
 .hero .vs { color: var(--ink2); font-size: 13px; }
@@ -686,7 +688,7 @@ body.ov .ovhint { display: block; }
 
 
   <div class="hd"><div><h2 id="cId"></h2><p id="cSub"></p></div><span class="pill" id="cPill"></span></div>
-  <div class="hero"><span>MAM corretta</span><div class="row"><b class="num" id="cMam"></b><span class="vs num" id="cVs"></span></div></div>
+  <div class="hero"><span class="hl">MAM corretta <em>· misura del twin</em></span><div class="row"><b class="num" id="cMam"></b><span class="vs num" id="cVs"></span></div></div>
   <div class="bal">
     <div class="lbl"><span>Liquido letto rispetto all’atteso</span><em class="num" id="cGap"></em></div>
     <div class="bar"><div class="g" id="bG"></div></div><div class="scale"><span>−1 t</span><span>atteso</span><span>+1 t</span></div>
@@ -780,7 +782,7 @@ function live(t, yard, fill) {
     $('bG').style.left = (gap < 0 ? 50 - w : 50) + '%'; $('bG').style.width = Math.max(w, .8) + '%';
   } else {
     p.textContent = 'In corso'; p.style.setProperty('--c', 'var(--ink2)');
-    cancelAnimationFrame(raf); shown = null; $('cMam').innerHTML = '<span style="color:var(--ink3)">····</span>'; $('cVs').textContent = 'a fine colata';
+    cancelAnimationFrame(raf); shown = null; $('cMam').innerHTML = '<span style="opacity:.14">0000</span>'; $('cVs').textContent = 'a fine colata';
     $('cGap').textContent = 'in attesa'; bal.style.setProperty('--c', 'var(--ink2)');
     $('bG').style.left = '50%'; $('bG').style.width = '0%';
   }
