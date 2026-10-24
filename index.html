@@ -592,11 +592,17 @@ window.__ready = true;
 .trio b { font-size: 13px; font-weight: 500; }
 .sec h3 { font-size: 13px; font-weight: 600; letter-spacing: -.005em; margin-bottom: 6px; }
 .list { display: flex; flex-direction: column; margin: 0 -8px; }
-.list button { all: unset; display: grid; grid-template-columns: 8px 1fr auto; align-items: center; gap: 10px; padding: 8px; border-radius: 10px; cursor: pointer; font-size: 13px; transition: background 120ms; }
-.list button:hover { background: rgba(255,255,255,.05); }
-.list button:active { transform: scale(.985); }
-.list button[aria-current="true"] { background: rgba(255,255,255,.1); }
-.list button:focus-visible { outline: 1px solid var(--accent); }
+.list .row { display: flex; align-items: center; gap: 4px; }
+.list .row .pick { flex: 1; min-width: 0; }
+.list .rp { all: unset; flex: none; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; color: var(--ink2); background: rgba(255,255,255,.06); cursor: pointer; transition: background 120ms, color 120ms, transform 100ms; }
+.list .rp:hover { background: var(--c); color: #111; }
+.list .rp:active { transform: scale(.9); }
+.list .rp:focus-visible { outline: 1px solid var(--accent); }
+.list .pick { all: unset; display: grid; grid-template-columns: 8px 1fr auto; align-items: center; gap: 10px; padding: 8px; border-radius: 10px; cursor: pointer; font-size: 13px; transition: background 120ms; }
+.list .pick:hover { background: rgba(255,255,255,.05); }
+.list .pick:active { transform: scale(.985); }
+.list .pick[aria-current="true"] { background: rgba(255,255,255,.1); }
+.list .pick:focus-visible { outline: 1px solid var(--accent); }
 .list i { width: 8px; height: 8px; border-radius: 50%; background: var(--c); }
 .list small { color: var(--ink2); font-size: 12px; margin-left: 6px; }
 .list .gap { color: var(--ink2); }
@@ -722,7 +728,7 @@ function render() {
   const d = C[cur];
   $('cId').textContent = 'Colata ' + d.id; $('cSub').textContent = `C45 · ${d.t}`;
   $('list').innerHTML = C.slice(-5).reverse().map(x => { const i = C.indexOf(x), g = x.l - x.a;
-    return `<button type="button" data-i="${i}" aria-current="${i === cur}" style="--c:${ST[x.s][1]}"><i></i><span>${x.id}<small>${ST[x.s][0]}</small></span><span class="gap num ${x.s !== 'ok' ? 'hot' : ''}">${minus(g)} kg</span></button>`; }).join('');
+    return `<div class="row" style="--c:${ST[x.s][1]}"><button type="button" class="pick" data-i="${i}" aria-current="${i === cur}"><i></i><span>${x.id}<small>${{ ok: 'In regola', tara: 'Tara', emergency: 'Emergenza' }[x.s]}</small></span><span class="gap num ${x.s !== 'ok' ? 'hot' : ''}">${minus(g)} kg</span></button><button type="button" class="rp" data-r="${i}" aria-label="Rivedi la colata ${x.id}" title="Rivedi la colata"><svg viewBox="0 0 16 16" width="12" height="12"><path d="M4.5 2.8v10.4L13 8z" fill="currentColor"/></svg></button></div>`; }).join('');
   spark(); lastDone = null;
 }
 // the selected colata fills in as the replay goes: weighed charge, expected liquid, ladle reading, then the verdict
@@ -748,7 +754,11 @@ function live(t, yard, fill) {
     $('bG').style.left = '50%'; $('bG').style.width = '0%';
   }
 }
-$('list').addEventListener('click', e => { const b = e.target.closest('button[data-i]'); if (b) { cur = +b.dataset.i; render(); } });
+$('list').addEventListener('click', e => {
+  const r = e.target.closest('button[data-r]');
+  if (r) { cur = +r.dataset.r; render(); window.__twin.goPhase('carica'); return; } // replay that colata from the start
+  const b = e.target.closest('button[data-i]'); if (b) { cur = +b.dataset.i; render(); }
+});
 render();
 
 function offset() { const c = window.__cam; if (!c) return; const w = innerWidth, h = innerHeight, k = w > 860 ? ($('stage').querySelector('canvas') && document.querySelector('.insp').offsetWidth + 32)/2 : 0; c.clearViewOffset(); }
