@@ -330,8 +330,8 @@ const NB = 4, TCUT = [.60, .65, .70, .75], bars = [];
 // cooling bed (walking rakes) beside the run-out, and a magnet crane above it
 for (let z = -2.6; z <= 2.6; z += .65) add(caster, new THREE.BoxGeometry(BIL_LEN + 1, .12, .14), mTower, RACK_X, CY - .32, z);
 for (const z of [-2.8, 2.8]) for (const dx of [-1.8, 1.8]) add(caster, new THREE.BoxGeometry(.25, CY, .25), mTower, RACK_X + dx, CY/2 - .2, z);
-for (const dx of [-.75, .75]) add(caster, new THREE.BoxGeometry(.3, .45, 40), mTower, RACK_X + dx, 14.45, -14); // runway girders the magnet trolley rides on
-for (const z of [4.5, -32]) for (const dx of [-.75, .75]) add(caster, new THREE.BoxGeometry(.35, 14.2, .35), mTower, RACK_X + dx, 7.1, z);
+for (const dx of [-.75, .75]) add(caster, new THREE.BoxGeometry(.3, .45, 26), mTower, RACK_X + dx, 14.45, -8); // runway girders the magnet trolley rides on
+for (const z of [4.5, -20.5]) for (const dx of [-.75, .75]) add(caster, new THREE.BoxGeometry(.35, 14.2, .35), mTower, RACK_X + dx, 7.1, z);
 const crane3 = new THREE.Group(); caster.add(crane3);
 add(crane3, new THREE.BoxGeometry(1.9, .5, 1.2), mDark, RACK_X, 14, 0);
 const cable3 = add(crane3, new THREE.CylinderGeometry(.03, .03, 1, 6), mPipe, RACK_X, 11, 0); cable3.castShadow = false;
@@ -417,7 +417,7 @@ function frame(dt) {
   strandStub.visible = stub > .02; strandStub.position.set(SHEAR_X + stub/2, CY, 0); strandStub.scale.y = Math.max(.001, stub);
   streamTun.visible = tau >= .42 && tau < .62; streamTun.position.set(CX, 12.6, 0); streamTun.scale.set(1, .5, 1);
   // magnet crane over the cooling bed: down, grab the bundle, lift, carry away
-  const mDown = cs(clamp((tau - .86)/.03)) - cs(clamp((tau - .90)/.03)), carryZ = -30*cs(clamp((tau - .93)/.06));
+  const mDown = cs(clamp((tau - .86)/.03)) - cs(clamp((tau - .90)/.03)), carryZ = -17*cs(clamp((tau - .93)/.06));
   const magnetY = 9 - (9 - (CY + .45))*mDown, lifted3 = tau >= .895 ? (magnetY - (CY + .45)) : 0;
   const magnetCarry = { y: lifted3, z: tau >= .895 ? carryZ : 0 };
   crane3.position.z = carryZ; magnet.position.y = magnetY; cable3.scale.y = Math.max(.01, 14 - magnetY); cable3.position.y = (14 + magnetY)/2;
