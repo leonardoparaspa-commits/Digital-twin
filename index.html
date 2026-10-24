@@ -396,10 +396,11 @@ function frame(dt) {
   scaleTick.position.x = -.33 + .66*w; scaleTick.visible = w > .02 && w < .99;
   // casting: strand grows from the mold along the curved path, shear cuts bars that ride to the scale
   const V = MOLD_Y - ARC_Y, AL = Math.PI/2*CR, H = SHEAR_X - HX, head = (V + AL + H)*clamp((tau - .46)/.17);
-  const vL = Math.min(head, V); strandV.visible = vL > .01; strandV.position.set(CX, MOLD_Y - vL/2, 0); strandV.scale.y = Math.max(.001, vL);
-  sprays.forEach(sp => sp.visible = head > sp.userData.u + .2);
-  arcSeg.forEach((m, i) => m.visible = head >= V + (i + .5)*AL/ARC_N);
-  const hL = clamp(head - V - AL, 0, H); strandH.visible = hL > .01; strandH.position.set(HX + hL/2, CY, 0); strandH.scale.y = Math.max(.001, hL);
+  const tail = (V + AL + H)*clamp((tau - .80)/.11); // once the ladle is empty the strand's tail runs down the machine, so every kg ends up cut into bars
+  const v0 = Math.min(tail, V), vL = Math.max(0, Math.min(head, V) - v0); strandV.visible = vL > .01; strandV.position.set(CX, MOLD_Y - v0 - vL/2, 0); strandV.scale.y = Math.max(.001, vL);
+  sprays.forEach(sp => sp.visible = head > sp.userData.u + .2 && tau < .9);
+  arcSeg.forEach((m, i) => m.visible = head >= V + (i + .5)*AL/ARC_N && tail < V + (i + .5)*AL/ARC_N);
+  const h0 = clamp(tail - V - AL, 0, H), hL = Math.max(0, clamp(head - V - AL, 0, H) - h0); strandH.visible = hL > .01; strandH.position.set(HX + h0 + hL/2, CY, 0); strandH.scale.y = Math.max(.001, hL);
   const kk = Math.floor((tau - .63)/.07), ph = (tau - .63 - kk*.07)/.07, stub = tau >= .63 && tau < .91 ? ph*BIL_LEN : 0;
   strandStub.visible = stub > .02; strandStub.position.set(SHEAR_X + stub/2, CY, 0); strandStub.scale.y = Math.max(.001, stub);
   streamTun.visible = tau >= .42 && tau < .82; streamTun.position.set(CX, 12.6, 0); streamTun.scale.set(1, .5, 1);
